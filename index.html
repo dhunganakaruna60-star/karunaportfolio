@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karuna Dhungana | Portfolio</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #fafafa;
+      color: #333;
+      line-height: 1.6;
+      scroll-behavior: smooth;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(90deg, #a18cd1, #fbc2eb);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 3rem;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .logo {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.8rem;
+      color: #fff;
+    }
+    .nav-links a {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 500;
+      transition: opacity 0.3s ease;
+      margin-right:100px;
+    }
+    .nav-links a:hover {
+      opacity: 0.8;
+    }
+
+    /* Header */
+    header {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: linear-gradient(to right, rgba(161,140,209,0.1), rgba(251,194,235,0.1)), url('bg.jpg') no-repeat center/cover;
+      color: #fff;
+      padding: 0 1rem;
+    }
+    header h1 {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 2px 3px 8px rgba(0,0,0,0.3);
+      
+    }
+    header h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-weight: 400;
+      background-color: #7a4ba0;
+      border-radius: 5px;
+      padding:5px;
+
+    }
+    header p {
+      max-width: 600px;
+      background-color: #7a4ba0;
+      border-radius: 5px;
+      padding:5px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.8rem 1.8rem;
+      border-radius: 50px;
+      background: #fff;
+      color: #7a4ba0;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: 1.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .btn:hover {
+      background: #7a4ba0;
+      color: #fff;
+    }
+
+    /* Sections */
+    section {
+      width: 100%;
+      max-width: 1100px;
+      margin: auto;
+      padding: 4rem 2rem;
+    }
+    section h2 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #7a4ba0;
+    }
+
+    /* Cards */
+    .skills-list, .projects-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .card {
+      padding: 2rem;
+      border-radius: 15px;
+      background: #fff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 20px rgba(100, 14, 14, 0.15);
+    }
+
+    /* Contact */
+    #contact p {
+      text-align: center;
+    }
+    .contact-icons {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    .contact-icons a {
+      margin: 0 1rem;
+      font-size: 1.5rem;
+      color: #7a4ba0;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    .contact-icons a:hover {
+      color: #d16ba5;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+      padding: 2rem 1.5rem;
+      border-top: 1px solid #eee;
+      margin-top: 3rem;
+      background: #f7f0fa;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Karuna</div>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#projects">Projects</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
+  <header>
+    <h1>Karuna Dhungana</h1>
+    <h2>International Student from Nepal</h2>
+    <p>Currently pursuing <strong>Integrated Business Management</strong> at <strong>Dong-A University</strong>, South Korea. Passionate about business, culture, and building meaningful connections worldwide.</p>
+    <a href="#projects" class="btn">View My Work</a>
+  </header>
+
+  <section id="about">
+    <h2>About Me</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center;">
+      <div style="flex: 1 1 300px; max-width: 500px; background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <p>Hello! I'm <strong>Karuna Dhungana</strong>, an aspiring business professional from Nepal, currently pursuing <strong>Integrated Business Management</strong> at <strong>Dong-A University</strong>, South Korea. I am passionate about exploring innovative business strategies, cross-cultural communication, and building meaningful global connections.</p>
+      </div>
+      <div style="flex: 1 1 250px; max-width: 380px; background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <h3 style="color: #7a4ba0; margin-bottom: 1rem;">Highlights</h3>
+        <ul style="list-style: none; padding: 0; font-weight: 500;">
+          <li>🎓 Integrated Business Management student</li>
+          <li>🌏 International student from Nepal</li>
+          <li>💼 Skilled in business strategy & research</li>
+          <li>🤝 Experienced in cross-cultural teamwork</li>
+          <li>🎯 Driven, curious, and creative</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  
+
+  <section id="skills">
+    <h2>Skills</h2>
+    <div class="skills-list">
+      <div class="card"><h3>Business Strategy</h3><p>Understanding core management principles and strategic planning.</p></div>
+      <div class="card"><h3>Cross-Cultural Communication</h3><p>Adapting to diverse environments and building strong relationships.</p></div>
+      <div class="card"><h3>Research & Analysis</h3><p>Ability to research, analyze, and present business insights clearly.</p></div>
+      <div class="card"><h3>Leadership</h3><p>Team collaboration and leadership in academic and cultural projects.</p></div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <h2>Projects</h2>
+    <div class="projects-list">
+      <div class="card"><h3>Project 1</h3><p>Coming Soon...</p></div>
+      <div class="card"><h3>Project 2</h3><p>Coming Soon...</p></div>
+      <div class="card"><h3>Project 3</h3><p>Coming Soon...</p></div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <h2>Contact</h2>
+    <p>I'd love to connect with you! Feel free to reach out for collaboration, ideas, or opportunities.</p>
+    <div class="contact-icons">
+      <a href="mailto:dhunganakaruna60@gmail.com"><i class="fas fa-envelope"></i></a>
+      <a href="https://github.com/dhunganakaruna60-star" target="_blank"><i class="fab fa-github"></i></a>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 Karuna Dhungana | All Rights Reserved
+  </footer>
+</body>
+</html>
