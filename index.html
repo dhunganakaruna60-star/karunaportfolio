@@ -9,6 +9,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
+    /* Global Styles */
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
@@ -18,6 +19,7 @@
       scroll-behavior: smooth;
     }
 
+    /* Navbar */
     nav {
       position: fixed;
       top: 0;
@@ -30,11 +32,16 @@
       padding: 1rem 3rem;
       z-index: 1000;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      flex-wrap: wrap;
     }
     .logo {
       font-family: 'Pacifico', cursive;
       font-size: 1.8rem;
       color: #fff;
+    }
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
     }
     .nav-links a {
       margin: 0 1rem;
@@ -42,7 +49,6 @@
       color: #fff;
       font-weight: 500;
       transition: opacity 0.3s ease;
-      margin-right:100px;
     }
     .nav-links a:hover {
       opacity: 0.8;
@@ -65,7 +71,6 @@
       font-size: 3rem;
       margin-bottom: 0.5rem;
       text-shadow: 2px 3px 8px rgba(0,0,0,0.3);
-      
     }
     header h2 {
       font-size: 1.5rem;
@@ -74,7 +79,6 @@
       background-color: #7a4ba0;
       border-radius: 5px;
       padding:5px;
-
     }
     header p {
       max-width: 600px;
@@ -162,6 +166,79 @@
       margin-top: 3rem;
       background: #f7f0fa;
     }
+
+    /* About section flex layout */
+    #about div {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+    }
+    #about div > div {
+      flex: 1 1 300px;
+      max-width: 500px;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      nav {
+        padding: 1rem 1.5rem;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .nav-links {
+        width: 100%;
+        justify-content: space-around;
+        margin-top: 0.5rem;
+      }
+      .nav-links a {
+        margin-right: 0;
+        padding: 0.5rem 0;
+      }
+
+      header h1 {
+        font-size: 2.2rem;
+      }
+      header h2 {
+        font-size: 1.2rem;
+        padding: 4px 6px;
+      }
+      header p {
+        font-size: 0.9rem;
+        padding: 4px 6px;
+      }
+      .btn {
+        padding: 0.6rem 1.2rem;
+      }
+
+      .skills-list, .projects-list {
+        grid-template-columns: 1fr;
+      }
+
+      #about div > div {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+      header h2 {
+        font-size: 1rem;
+      }
+      header p {
+        font-size: 0.85rem;
+      }
+      .btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -184,11 +261,11 @@
 
   <section id="about">
     <h2>About Me</h2>
-    <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center;">
-      <div style="flex: 1 1 300px; max-width: 500px; background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <div>
+      <div>
         <p>Hello! I'm <strong>Karuna Dhungana</strong>, an aspiring business professional from Nepal, currently pursuing <strong>Integrated Business Management</strong> at <strong>Dong-A University</strong>, South Korea. I am passionate about exploring innovative business strategies, cross-cultural communication, and building meaningful global connections.</p>
       </div>
-      <div style="flex: 1 1 250px; max-width: 380px; background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+      <div>
         <h3 style="color: #7a4ba0; margin-bottom: 1rem;">Highlights</h3>
         <ul style="list-style: none; padding: 0; font-weight: 500;">
           <li>🎓 Integrated Business Management student</li>
@@ -200,7 +277,6 @@
       </div>
     </div>
   </section>
-  
 
   <section id="skills">
     <h2>Skills</h2>
