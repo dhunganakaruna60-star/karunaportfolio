@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Shooter</title>
+    <title>Space Shooter-Game By Karuna</title>
     <style>
         body {
             margin: 0;
@@ -39,23 +39,40 @@
             font-size: 18px;
             text-shadow: 0 0 10px #00ffff;
             z-index: 10;
+            display: none;
         }
 
-        #gameOver {
+        #startScreen, #gameOver {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #ff4444;
             text-align: center;
             font-size: 24px;
-            text-shadow: 0 0 20px #ff4444;
-            display: none;
             z-index: 20;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 30px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
             border-radius: 15px;
-            border: 2px solid #ff4444;
+            border: 2px solid #00ffff;
+        }
+
+        #startScreen {
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+        }
+
+        #gameOver {
+            color: #ff4444;
+            text-shadow: 0 0 20px #ff4444;
+            border-color: #ff4444;
+            display: none;
+        }
+
+        #gameTitle {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
         }
 
         #instructions {
@@ -66,6 +83,32 @@
             font-size: 14px;
             text-align: right;
             z-index: 10;
+            display: none;
+        }
+
+        #developmentHistory {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #888;
+            font-size: 12px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        #developmentHistory a {
+            color: #00ffff;
+            text-decoration: none;
+            text-shadow: 0 0 5px #00ffff;
+            transition: all 0.3s ease;
+        }
+
+        #developmentHistory a:hover {
+            color: #ffffff;
+            text-shadow: 0 0 10px #00ffff;
         }
 
         .star {
@@ -109,6 +152,17 @@
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         
+        <div id="startScreen">
+            <div id="gameTitle">Space Shooter</div>
+            <p>Game By Karuna</p>
+            <p>Defend Earth from the alien invasion!</p>
+            <button onclick="startGame()">Start Game</button>
+            <div style="margin-top: 30px; font-size: 16px; color: #888;">
+                <div>Arrow Keys: Move</div>
+                <div>Spacebar: Shoot</div>
+            </div>
+        </div>
+        
         <div id="ui">
             <div>Score: <span id="score">0</span></div>
             <div>Lives: <span id="lives">3</span></div>
@@ -124,6 +178,14 @@
             <div>Arrow Keys: Move</div>
             <div>Spacebar: Shoot</div>
         </div>
+
+        <div id="developmentHistory">
+            <div><strong>Development History:</strong></div>
+            <div><a href="https://claude.ai/share/b45f9845-b341-42f0-8721-fedcdf39d494" target="_blank">View Claude AI Conversation →</a></div>
+            <div style="font-size: 10px; margin-top: 5px; color: #666;">
+                Complete development process and code iterations
+            </div>
+        </div>
     </div>
 
     <script>
@@ -131,7 +193,8 @@
         const ctx = canvas.getContext('2d');
         
         // Game state
-        let gameRunning = true;
+        let gameStarted = false;
+        let gameRunning = false;
         let score = 0;
         let lives = 3;
         let keys = {};
@@ -198,7 +261,7 @@
         
         // Shooting
         function shoot() {
-            if (gameRunning) {
+            if (gameRunning && gameStarted) {
                 bullets.push({
                     x: player.x + player.width / 2 - 2,
                     y: player.y,
@@ -207,6 +270,15 @@
                     speed: 7
                 });
             }
+        }
+        
+        // Start game
+        function startGame() {
+            gameStarted = true;
+            gameRunning = true;
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            document.getElementById('instructions').style.display = 'block';
         }
         
         // Enemy spawning
@@ -371,6 +443,7 @@
         
         // Restart game
         function restartGame() {
+            gameStarted = true;
             gameRunning = true;
             score = 0;
             lives = 3;
@@ -378,9 +451,12 @@
             enemies = [];
             particles = [];
             enemySpawnTimer = 0;
+            enemySpawnRate = 60;
             player.x = canvas.width / 2 - 20;
             player.y = canvas.height - 60;
             document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            document.getElementById('instructions').style.display = 'block';
             updateUI();
         }
         
@@ -389,7 +465,7 @@
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            if (gameRunning) {
+            if (gameRunning && gameStarted) {
                 // Update game objects
                 updatePlayer();
                 updateBullets();
@@ -407,13 +483,16 @@
                         enemySpawnRate -= 0.5;
                     }
                 }
+                
+                // Draw everything
+                drawPlayer();
+                drawBullets();
+                drawEnemies();
             }
             
-            // Draw everything
-            drawPlayer();
-            drawBullets();
-            drawEnemies();
+            // Always draw particles (for explosions)
             drawParticles();
+            updateParticles();
             
             requestAnimationFrame(gameLoop);
         }
