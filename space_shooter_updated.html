@@ -1,228 +1,1053 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Space Shooter - Game By Karuna</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(180deg, #0a0a2e 0%, #16213e 50%, #1a1a3e 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      font-family: 'Courier New', monospace;
-      overflow: hidden;
-    }
-    #gameContainer {
-      position: relative;
-      margin-bottom: 20px;
-      border: 2px solid #00ffff;
-      border-radius: 10px;
-      box-shadow: 0 0 20px #00ffff, inset 0 0 20px rgba(0,255,255,0.2);
-      background: black;
-    }
-    #gameCanvas {
-      display: block;
-    }
-    #ui, #mobileUI, #soundToggle, #chatHistory, #mobileControls, #startScreen, #gameOver {
-      position: absolute;
-      z-index: 10;
-    }
-    #soundToggle {
-      top: 10px; right: 10px;
-      background: rgba(0,255,255,0.2);
-      padding: 5px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #chatHistory {
-      bottom: 10px; right: 10px;
-      background: rgba(0,0,0,0.7);
-      padding: 5px 8px;
-      border-radius: 6px;
-    }
-    #chatHistory a { color: #00ffff; text-decoration: none; }
-    #mobileControls {
-      bottom: 20px; left: 0; right: 0;
-      display: flex; justify-content: space-between;
-      padding: 0 20px;
-    }
-    .mobile-btn {
-      width: 70px; height: 70px;
-      border: 2px solid #00ffff;
-      border-radius: 12px;
-      background: rgba(0,255,255,0.2);
-      font-size: 28px;
-      color: #00ffff;
-      display: flex; align-items: center; justify-content: center;
-      user-select: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Shooter - Game By Karuna</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(180deg, #0a0a2e 0%, #16213e 50%, #1a1a3e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+        }
+
+        #gameContainer {
+            position: relative;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #00ffff, inset 0 0 20px rgba(0, 255, 255, 0.1);
+            background: radial-gradient(circle at center, rgba(0, 20, 40, 0.8) 0%, rgba(0, 10, 30, 0.9) 100%);
+            margin-bottom: 20px;
+        }
+
+        #gameCanvas {
+            display: block;
+            border-radius: 8px;
+            background: transparent;
+        }
+
+        /* Desktop UI - positioned over canvas */
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ffff;
+            font-size: 18px;
+            text-shadow: 0 0 10px #00ffff;
+            z-index: 10;
+            display: none;
+        }
+
+        /* Mobile UI - positioned above canvas */
+        #mobileUI {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 450px;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            margin-bottom: 15px;
+            color: #00ffff;
+            font-size: 16px;
+            text-shadow: 0 0 10px #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        #mobileUI #mobileLivesContainer {
+            display: flex;
+            align-items: center;
+        }
+
+        #mobileUI #mobileHeartsDisplay {
+            display: flex;
+            margin-left: 10px;
+        }
+
+        #mobileUI .heart {
+            width: 18px;
+            height: 18px;
+            margin-right: 3px;
+        }
+
+        /* Lives container for both desktop and mobile */
+        #livesContainer {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        #heartsDisplay {
+            display: flex;
+            margin-left: 10px;
+        }
+
+        .heart {
+            width: 22px;
+            height: 22px;
+            margin-right: 5px;
+        }
+
+        /* Start screen and game over overlay */
+        #startScreen, #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 24px;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+
+        #startScreen {
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+        }
+
+        #gameOver {
+            color: #ff4444;
+            text-shadow: 0 0 20px #ff4444;
+            border-color: #ff4444;
+            display: none;
+            box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
+        }
+
+        #gameTitle {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 40px #00ffff; }
+        }
+
+        /* Mobile controls positioned at screen edges */
+        #mobileControls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        .mobile-btn {
+            background: rgba(0, 255, 255, 0.3);
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            color: #00ffff;
+            font-size: 32px;
+            font-weight: bold;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: manipulation;
+            user-select: none;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            pointer-events: auto;
+        }
+
+        .mobile-btn:active {
+            background: rgba(0, 255, 255, 0.6);
+            transform: scale(0.95);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        }
+
+        /* Sound toggle button */
+        #soundToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 255, 255, 0.3);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            font-size: 20px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s ease;
+        }
+
+        #soundToggle:hover {
+            background: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+
+        #soundToggle.muted {
+            background: rgba(255, 68, 68, 0.3);
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        /* Chat history link */
+        #chatHistory {
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        #chatHistory a {
+            color: #00ffff;
+            text-decoration: none;
+            text-shadow: 0 0 5px #00ffff;
+            transition: all 0.3s ease;
+        }
+
+        #chatHistory a:hover {
+            color: #ffffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        /* Background star animation */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        /* Button styling */
+        button {
+            background: linear-gradient(45deg, #00ffff, #0088ff);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 25px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0px);
+        }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            #mobileControls {
+                display: flex;
+            }
+            
+            #mobileUI {
+                display: flex;
+            }
+            
+            #ui {
+                display: none !important;
+            }
+            
+            #gameContainer {
+                margin-bottom: 15px;
+            }
+            
+            #gameCanvas {
+                width: 95vw;
+                height: auto;
+                max-width: 450px;
+            }
+            
+            body {
+                padding: 10px 10px 120px 10px;
+            }
+            
+            .mobile-btn {
+                width: 80px;
+                height: 80px;
+                font-size: 28px;
+            }
+
+            #soundToggle {
+                top: 15px;
+                right: 15px;
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+
+            #chatHistory {
+                position: fixed;
+                bottom: 120px;
+                right: 15px;
+                font-size: 11px;
+                padding: 6px 10px;
+            }
+        }
+
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            #gameCanvas {
+                width: 800px;
+                height: 600px;
+            }
+        }
+
+        /* Small mobile styles */
+        @media (max-width: 480px) {
+            .mobile-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 24px;
+            }
+
+            #mobileControls {
+                bottom: 15px;
+                padding: 0 15px;
+            }
+
+            #chatHistory {
+                bottom: 105px;
+                right: 10px;
+                font-size: 10px;
+                padding: 5px 8px;
+            }
+
+            #soundToggle {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="gameContainer">
-    <canvas id="gameCanvas"></canvas>
-    <div id="soundToggle">🔊</div>
-    <div id="chatHistory"><a href="https://claude.ai/share/b45f9845-b341-42f0-8721-fedcdf39d494" target="_blank">Chat History</a></div>
-    <div id="startScreen">
-      <h2 style="color:#00ffff;">Space Shooter</h2>
-      <p>Press Start</p>
-      <button onclick="startGame()">Start</button>
+    <!-- Background stars -->
+    <div id="stars"></div>
+    
+    <!-- Mobile UI - appears above canvas on mobile -->
+    <div id="mobileUI">
+        <div>
+            <div>Score: <span id="mobileScore">0</span></div>
+            <div>High: <span id="mobileHighScore">0</span></div>
+        </div>
+        <div id="mobileLivesContainer">
+            Lives: <div id="mobileHeartsDisplay"></div>
+        </div>
     </div>
-    <div id="gameOver" style="display:none; color:#ff4444;">
-      <h2>Game Over</h2>
-      <p>Final Score: <span id="finalScore">0</span></p>
-      <button onclick="restartGame()">Restart</button>
+    
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <!-- Sound toggle button -->
+        <div id="soundToggle" title="Toggle Sound">🔊</div>
+        
+        <div id="startScreen">
+            <div id="gameTitle">Space Shooter</div>
+            <p>Game By Karuna</p>
+            <p>Defend Earth from the alien invasion!</p>
+            <p id="highScoreDisplay" style="color: #ffff00; font-size: 18px; margin: 15px 0;"></p>
+            <button onclick="startGame()">Start Game</button>
+            <div style="margin-top: 30px; font-size: 16px; color: #888;">
+                <div>Left/Right Arrow Keys: Move</div>
+                <div>Automatic Firing</div>
+                <div style="font-size: 14px; margin-top: 10px;">Mobile: Use edge buttons</div>
+            </div>
+        </div>
+        
+        <!-- Desktop UI - overlaid on canvas -->
+        <div id="ui">
+            <div>Score: <span id="score">0</span></div>
+            <div>High Score: <span id="highScore">0</span></div>
+            <div id="livesContainer">
+                Lives: <div id="heartsDisplay"></div>
+            </div>
+        </div>
+        
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p id="newHighScore" style="color: #ffff00; display: none; font-size: 20px; margin: 15px 0; animation: glow 1s ease-in-out infinite alternate;">NEW HIGH SCORE!</p>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
     </div>
-    <div id="ui" style="top:10px; left:10px; color:#00ffff;">
-      <div>Score: <span id="score">0</span></div>
-      <div>High: <span id="highScore">0</span></div>
-      <div>Lives: <span id="lives">5</span></div>
+
+    <!-- Chat History Link - visible on both desktop and mobile -->
+    <div id="chatHistory">
+        <a href="https://claude.ai/share/b45f9845-b341-42f0-8721-fedcdf39d494" target="_blank">View AI Chat History →</a>
     </div>
-  </div>
 
-  <div id="mobileControls">
-    <button class="mobile-btn" id="leftBtn">←</button>
-    <button class="mobile-btn" id="rightBtn">→</button>
-  </div>
+    <!-- Mobile Controls - positioned at screen edges, only visible on mobile -->
+    <div id="mobileControls">
+        <button class="mobile-btn" id="leftBtn">←</button>
+        <button class="mobile-btn" id="rightBtn">→</button>
+    </div>
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+    <script>
+        // ===== CANVAS SETUP AND HIGH DPI HANDLING =====
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Handle high DPI displays for crisp rendering
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
 
-    const canvasBaseWidth = 800;
-    const canvasBaseHeight = 600;
-    let scaleX = 1, scaleY = 1;
+        // ===== GAME STATE VARIABLES =====
+        let gameStarted = false;
+        let gameRunning = false;
+        let score = 0;
+        let lives = 5; // Start with 5 lives as required
+        let keys = {};
+        let mobileControls = {};
+        
+        // Automatic firing system - shoots continuously when game is running
+        let autoShootTimer = 0;
+        let autoShootRate = 6; // Fire every 6 frames (about 10 bullets/second at 60fps)
 
-    function resizeCanvas() {
-      const maxWidth = window.innerWidth * 0.95;
-      const maxHeight = window.innerHeight * 0.7;
-      const aspect = canvasBaseWidth / canvasBaseHeight;
-      let newWidth = maxWidth;
-      let newHeight = newWidth / aspect;
-      if (newHeight > maxHeight) {
-        newHeight = maxHeight;
-        newWidth = newHeight * aspect;
-      }
-      canvas.style.width = newWidth + "px";
-      canvas.style.height = newHeight + "px";
-      canvas.width = canvasBaseWidth;
-      canvas.height = canvasBaseHeight;
-      scaleX = newWidth / canvasBaseWidth;
-      scaleY = newHeight / canvasBaseHeight;
-    }
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
+        // ===== HIGH SCORE PERSISTENCE WITH LOCALSTORAGE =====
+        // Retrieve saved high score from browser storage, default to 0 if none exists
+        let highScore = parseInt(localStorage.getItem('spaceShooterHighScore')) || 0;
 
-    // Game variables
-    let player = { x: 350, y: 500, w: 100, h: 80, speed: 8 };
-    let bullets = [];
-    let enemies = [];
-    let score = 0;
-    let lives = 5;
-    let gameRunning = false;
-    let highScore = parseInt(localStorage.getItem("spaceShooterHighScore")) || 0;
+        // ===== SOUND SYSTEM =====
+        let soundEnabled = true; // Default sound ON
+        const sounds = {
+            enemyHit: new Audio('assets/enemyhit.wav'),
+            gameOver: new Audio('assets/gameover.wav'),
+            background: new Audio('assets/backgroundsound.mp3')
+        };
 
-    // Controls
-    let keys = {};
-    document.addEventListener("keydown", e => keys[e.key] = true);
-    document.addEventListener("keyup", e => keys[e.key] = false);
-    document.getElementById("leftBtn").addEventListener("touchstart", ()=>keys["ArrowLeft"]=true);
-    document.getElementById("leftBtn").addEventListener("touchend", ()=>keys["ArrowLeft"]=false);
-    document.getElementById("rightBtn").addEventListener("touchstart", ()=>keys["ArrowRight"]=true);
-    document.getElementById("rightBtn").addEventListener("touchend", ()=>keys["ArrowRight"]=false);
+        // Preload all sounds and set up looping for background music
+        sounds.background.loop = true;
+        sounds.background.volume = 0.3; // Lower volume for background music
 
-    // Sounds
-    let soundEnabled = true;
-    const sounds = {
-      hit: new Audio("assets/enemyhit.wav"),
-      over: new Audio("assets/gameover.wav"),
-      bg: new Audio("assets/backgroundsound.mp3")
-    };
-    sounds.bg.loop = true; sounds.bg.volume = 0.3;
-    document.getElementById("soundToggle").onclick = ()=> {
-      soundEnabled=!soundEnabled;
-      if(soundEnabled){document.getElementById("soundToggle").textContent="🔊"; sounds.bg.play();}
-      else {document.getElementById("soundToggle").textContent="🔇"; sounds.bg.pause();}
-    };
-
-    function playSound(s){ if(soundEnabled){ sounds[s].currentTime=0; sounds[s].play(); } }
-
-    function startGame(){
-      score=0; lives=5; bullets=[]; enemies=[];
-      gameRunning=true;
-      document.getElementById("startScreen").style.display="none";
-      document.getElementById("gameOver").style.display="none";
-      sounds.bg.play();
-    }
-
-    function restartGame(){ startGame(); }
-
-    // Game loop
-    let frame=0;
-    function loop(){
-      ctx.clearRect(0,0,canvasBaseWidth,canvasBaseHeight);
-      ctx.fillStyle="black"; ctx.fillRect(0,0,canvasBaseWidth,canvasBaseHeight);
-
-      if(gameRunning){
-        // Player move
-        if(keys["ArrowLeft"] && player.x>0) player.x-=player.speed;
-        if(keys["ArrowRight"] && player.x<canvasBaseWidth-player.w) player.x+=player.speed;
-        // Draw player
-        ctx.fillStyle="#00ffff";
-        ctx.fillRect(player.x,player.y,player.w,player.h);
-
-        // Auto shoot
-        if(frame%10===0) bullets.push({x:player.x+player.w/2-5,y:player.y-10,w:10,h:20,s:10});
-        bullets.forEach((b,i)=>{ b.y-=b.s; ctx.fillStyle="yellow"; ctx.fillRect(b.x,b.y,b.w,b.h); if(b.y<-20)bullets.splice(i,1);});
-
-        // Spawn enemies
-        if(frame%60===0) enemies.push({x:Math.random()*(canvasBaseWidth-50),y:-40,w:50,h:40,s:2});
-        enemies.forEach((en,j)=>{
-          en.y+=en.s; ctx.fillStyle="red"; ctx.fillRect(en.x,en.y,en.w,en.h);
-          if(en.y>canvasBaseHeight){ enemies.splice(j,1); loseLife(); }
-        });
-
-        // Collisions
-        bullets.forEach((b,i)=>{
-          enemies.forEach((en,j)=>{
-            if(b.x<b.en+en.w && b.x+b.w>en.x && b.y<en.y+en.h && b.y+b.h>en.y){
-              bullets.splice(i,1); enemies.splice(j,1);
-              score+=10; playSound("hit");
+        // Sound control functions
+        function playSound(soundName) {
+            if (soundEnabled && sounds[soundName]) {
+                sounds[soundName].currentTime = 0; // Reset to start
+                sounds[soundName].play().catch(e => console.log('Audio play failed:', e));
             }
-          });
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const toggleBtn = document.getElementById('soundToggle');
+            
+            if (soundEnabled) {
+                toggleBtn.textContent = '🔊';
+                toggleBtn.classList.remove('muted');
+                toggleBtn.title = 'Mute Sound';
+                if (gameRunning) {
+                    sounds.background.play().catch(e => console.log('Background music failed:', e));
+                }
+            } else {
+                toggleBtn.textContent = '🔇';
+                toggleBtn.classList.add('muted');
+                toggleBtn.title = 'Unmute Sound';
+                sounds.background.pause();
+            }
+        }
+
+        // ===== IMAGE ASSETS =====
+        const images = {
+            player: new Image(),
+            enemy: new Image(),
+            bullet: new Image(),
+            heart: new Image(),
+            background: new Image()
+        };
+        
+        let imagesLoaded = 0;
+        const totalImages = 5;
+        
+        // Load all images from assets folder
+        images.player.src = 'assets/fighter.png';
+        images.enemy.src = 'assets/enemy.png';
+        images.bullet.src = 'assets/beams.png';
+        images.heart.src = 'assets/life.png';
+        images.background.src = 'assets/Scene-1.jpg';
+        
+        // Track image loading progress
+        function onImageLoad() {
+            imagesLoaded++;
+        }
+        
+        // Set up load handlers with error fallbacks
+        images.player.onload = onImageLoad;
+        images.enemy.onload = onImageLoad;
+        images.bullet.onload = onImageLoad;
+        images.heart.onload = onImageLoad;
+        images.background.onload = onImageLoad;
+        
+        images.player.onerror = onImageLoad;
+        images.enemy.onerror = onImageLoad;
+        images.bullet.onerror = onImageLoad;
+        images.heart.onerror = onImageLoad;
+        images.background.onerror = onImageLoad;
+
+        // ===== GAME OBJECTS =====
+        // Base canvas dimensions for consistent scaling
+        const canvasBaseWidth = 800;
+        const canvasBaseHeight = 600;
+        
+        // Player object - large fighter sprite for good mobile visibility
+        let player = {
+            x: canvasBaseWidth / 2 - 75, // Center horizontally
+            y: canvasBaseHeight - 120,   // Near bottom of screen
+            width: 150,  // Large size for visibility
+            height: 110,
+            speed: 8     // Fast movement speed
+        };
+        
+        // Game entity arrays
+        let bullets = [];
+        let enemies = [];
+        let particles = [];
+        let backgroundY = 0; // For scrolling background effect
+        
+        // Enemy spawning control
+        let enemySpawnTimer = 0;
+        let enemySpawnRate = 50; // Spawn every 50 frames initially
+
+        // ===== HIGH SCORE DISPLAY FUNCTIONS =====
+        function updateHighScoreDisplay() {
+            document.getElementById('highScore').textContent = highScore;
+            const display = document.getElementById('highScoreDisplay');
+            if (highScore > 0) {
+                display.textContent = `High Score: ${highScore}`;
+                display.style.display = 'block';
+            } else {
+                display.style.display = 'none';
+            }
+        }
+
+        // ===== BACKGROUND STAR GENERATION =====
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // ===== INPUT HANDLING =====
+        // Desktop keyboard input - only left and right arrow keys used
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
         });
-        enemies.forEach((en,j)=>{
-          if(en.x<player.x+player.w && en.x+en.w>player.x && en.y<player.y+player.h && en.y+en.h>player.y){
-            enemies.splice(j,1); loseLife();
-          }
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
         });
 
-        document.getElementById("score").textContent=score;
-        document.getElementById("highScore").textContent=highScore;
-        document.getElementById("lives").textContent=lives;
-      }
-      frame++;
-      requestAnimationFrame(loop);
-    }
+        // Mobile touch controls setup
+        function setupMobileControls() {
+            const controls = {
+                leftBtn: 'left',
+                rightBtn: 'right'
+            };
+            
+            Object.entries(controls).forEach(([id, action]) => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    // Touch events for mobile
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        mobileControls[action] = true;
+                    });
+                    
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        mobileControls[action] = false;
+                    });
+                    
+                    // Mouse events for desktop testing
+                    btn.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        mobileControls[action] = true;
+                    });
+                    
+                    btn.addEventListener('mouseup', (e) => {
+                        e.preventDefault();
+                        mobileControls[action] = false;
+                    });
+                }
+            });
+        }
 
-    function loseLife(){
-      lives--; if(lives<=0){ endGame(); }
-    }
+        // Sound toggle button setup
+        document.getElementById('soundToggle').addEventListener('click', toggleSound);
 
-    function endGame(){
-      gameRunning=false;
-      sounds.bg.pause(); playSound("over");
-      if(score>highScore){ highScore=score; localStorage.setItem("spaceShooterHighScore",highScore); }
-      document.getElementById("finalScore").textContent=score;
-      document.getElementById("gameOver").style.display="block";
-    }
+        // ===== PLAYER MOVEMENT (LEFT/RIGHT ONLY) =====
+        function updatePlayer() {
+            const moveLeft = keys['ArrowLeft'] || mobileControls.left;
+            const moveRight = keys['ArrowRight'] || mobileControls.right;
+            
+            // Horizontal movement with screen boundary checking
+            if (moveLeft && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (moveRight && player.x < canvasBaseWidth - player.width) {
+                player.x += player.speed;
+            }
+        }
 
-    loop();
-  </script>
+        // ===== AUTOMATIC FIRING SYSTEM =====
+        // Continuously shoots bullets when game is running - no manual input required
+        function autoShoot() {
+            if (gameRunning && gameStarted) {
+                autoShootTimer++;
+                if (autoShootTimer >= autoShootRate) {
+                    // Create new bullet at player center, moving upward
+                    bullets.push({
+                        x: player.x + player.width / 2 - 8, // Center on player
+                        y: player.y - 10,                   // Start above player
+                        width: 16,
+                        height: 35,
+                        speed: 12 // Fast bullet speed
+                    });
+                    autoShootTimer = 0; // Reset timer
+                }
+            }
+        }
+
+        // ===== GAME LIFECYCLE FUNCTIONS =====
+        function startGame() {
+            gameStarted = true;
+            gameRunning = true;
+            lives = 5; // Reset to 5 lives
+            score = 0;
+            bullets = [];
+            enemies = [];
+            particles = [];
+            enemySpawnTimer = 0;
+            enemySpawnRate = 50;
+            autoShootTimer = 0;
+            
+            // Start background music
+            if (soundEnabled) {
+                sounds.background.play().catch(e => console.log('Background music failed:', e));
+            }
+            
+            // Hide start screen, show game UI
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            
+            // Show mobile UI on mobile devices
+            if (window.innerWidth <= 768) {
+                document.getElementById('mobileUI').style.display = 'flex';
+            }
+            
+            updateLivesDisplay();
+            updateUI();
+        }
+
+        // Enemy spawning with random positioning
+        function spawnEnemy() {
+            enemies.push({
+                x: Math.random() * (canvasBaseWidth - 80), // Random x position
+                y: -80,  // Start above screen
+                width: 80,
+                height: 60,
+                speed: 2 + Math.random() * 3, // Variable speed
+                health: 1
+            });
+        }
+
+        // ===== BULLET MANAGEMENT =====
+        function updateBullets() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].y -= bullets[i].speed;
+                // Remove bullets that have left the screen
+                if (bullets[i].y < -bullets[i].height) {
+                    bullets.splice(i, 1);
+                }
+            }
+        }
+
+        // ===== ENEMY MANAGEMENT =====
+        function updateEnemies() {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                enemies[i].y += enemies[i].speed;
+                // Check if enemy has passed the bottom of screen
+                if (enemies[i].y > canvasBaseHeight) {
+                    enemies.splice(i, 1);
+                    loseLife(); // Lose life for missed enemy
+                }
+            }
+        }
+
+        // ===== LIVES SYSTEM WITH HEART ICONS =====
+        // Function called when player loses a life (collision or missed enemy)
+        function loseLife() {
+            lives--;
+            updateLivesDisplay(); // Update heart display
+            updateUI();
+            
+            // Check for game over condition
+            if (lives <= 0) {
+                gameOver();
+            }
+        }
+
+        // Update visual heart display for both desktop and mobile
+        function updateLivesDisplay() {
+            const heartsDisplay = document.getElementById('heartsDisplay');
+            const mobileHeartsDisplay = document.getElementById('mobileHeartsDisplay');
+            
+            // Clear existing hearts
+            heartsDisplay.innerHTML = '';
+            mobileHeartsDisplay.innerHTML = '';
+            
+            // Create heart icons for current lives count
+            for (let i = 0; i < lives; i++) {
+                // Desktop hearts
+                if (images.heart.complete && images.heart.naturalWidth > 0) {
+                    const heartImg = document.createElement('img');
+                    heartImg.src = 'assets/life.png';
+                    heartImg.className = 'heart';
+                    heartsDisplay.appendChild(heartImg);
+                    
+                    // Mobile hearts
+                    const mobileHeartImg = document.createElement('img');
+                    mobileHeartImg.src = 'assets/life.png';
+                    mobileHeartImg.className = 'heart';
+                    mobileHeartsDisplay.appendChild(mobileHeartImg);
+                } else {
+                    // Fallback to text hearts if image fails
+                    const heart = document.createElement('span');
+                    heart.textContent = '♥';
+                    heart.style.color = '#ff4444';
+                    heart.style.marginRight = '5px';
+                    heart.style.fontSize = '22px';
+                    heartsDisplay.appendChild(heart);
+                    
+                    const mobileHeart = document.createElement('span');
+                    mobileHeart.textContent = '♥';
+                    mobileHeart.style.color = '#ff4444';
+                    mobileHeart.style.marginRight = '3px';
+                    mobileHeart.style.fontSize = '16px';
+                    mobileHeartsDisplay.appendChild(mobileHeart);
+                }
+            }
+        }
+
+        // ===== COLLISION DETECTION =====
+        function checkCollisions() {
+            // Bullet vs Enemy collisions
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    if (bullets[i] && enemies[j] &&
+                        bullets[i].x < enemies[j].x + enemies[j].width &&
+                        bullets[i].x + bullets[i].width > enemies[j].x &&
+                        bullets[i].y < enemies[j].y + enemies[j].height &&
+                        bullets[i].y + bullets[i].height > enemies[j].y) {
+                        
+                        // Create explosion effect
+                        createExplosion(enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2);
+                        
+                        // Play enemy hit sound
+                        playSound('enemyHit');
+                        
+                        // Remove bullet and enemy
+                        bullets.splice(i, 1);
+                        enemies.splice(j, 1);
+                        
+                        // Increase score
+                        score += 10;
+                        updateUI();
+                        break;
+                    }
+                }
+            }
+            
+            // Player vs Enemy collisions
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                if (enemies[i].x < player.x + player.width &&
+                    enemies[i].x + enemies[i].width > player.x &&
+                    enemies[i].y < player.y + player.height &&
+                    enemies[i].y + enemies[i].height > player.y) {
+                    
+                    createExplosion(enemies[i].x + enemies[i].width / 2, enemies[i].y + enemies[i].height / 2);
+                    enemies.splice(i, 1);
+                    loseLife(); // Lose life on collision
+                }
+            }
+        }
+
+        // ===== VISUAL EFFECTS =====
+        function createExplosion(x, y) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.5) * 12,
+                    life: 50,
+                    maxLife: 50,
+                    size: Math.random() * 8 + 3
+                });
+            }
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // ===== DRAWING FUNCTIONS =====
+        function drawBackground() {
+            if (images.background.complete && images.background.naturalWidth > 0) {
+                // Create scrolling effect by drawing image twice
+                ctx.drawImage(images.background, 0, backgroundY, canvasBaseWidth, canvasBaseHeight);
+                ctx.drawImage(images.background, 0, backgroundY - canvasBaseHeight, canvasBaseWidth, canvasBaseHeight);
+                backgroundY += 2.5; // Scroll speed
+                if (backgroundY >= canvasBaseHeight) {
+                    backgroundY = 0; // Reset position for seamless loop
+                }
+            } else {
+                // Fallback gradient background if image fails to load
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvasBaseHeight);
+                gradient.addColorStop(0, '#001122');
+                gradient.addColorStop(1, '#000033');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvasBaseWidth, canvasBaseHeight);
+            }
+        }
+
+        function drawPlayer() {
+            if (images.player.complete && images.player.naturalWidth > 0) {
+                ctx.drawImage(images.player, player.x, player.y, player.width, player.height);
+            } else {
+                // Fallback colored rectangle with glow effect
+                ctx.fillStyle = '#00ffff';
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 20;
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                if (images.bullet.complete && images.bullet.naturalWidth > 0) {
+                    ctx.drawImage(images.bullet, bullet.x, bullet.y, bullet.width, bullet.height);
+                } else {
+                    // Fallback colored rectangle with glow
+                    ctx.fillStyle = '#ffff00';
+                    ctx.shadowColor = '#ffff00';
+                    ctx.shadowBlur = 10;
+                    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                    ctx.shadowBlur = 0;
+                }
+            });
+        }
+
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                if (images.enemy.complete && images.enemy.naturalWidth > 0) {
+                    ctx.drawImage(images.enemy, enemy.x, enemy.y, enemy.width, enemy.height);
+                } else {
+                    // Fallback colored rectangle with glow
+                    ctx.fillStyle = '#ff4444';
+                    ctx.shadowColor = '#ff4444';
+                    ctx.shadowBlur = 12;
+                    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    ctx.shadowBlur = 0;
+                }
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                let alpha = p.life / p.maxLife;
+                ctx.fillStyle = `rgba(255, 120, 0, ${alpha})`;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+            });
+        }
+
+        // ===== UI UPDATE FUNCTIONS =====
+        function updateUI() {
+            // Update desktop UI elements
+            document.getElementById('score').textContent = score;
+            document.getElementById('highScore').textContent = highScore;
+            
+            // Update mobile UI elements
+            document.getElementById('mobileScore').textContent = score;
+            document.getElementById('mobileHighScore').textContent = highScore;
+        }
+
+        // ===== GAME OVER HANDLING =====
+        function gameOver() {
+            gameRunning = false;
+            
+            // Stop background music and play game over sound
+            sounds.background.pause();
+            playSound('gameOver');
+            
+            // Check for new high score and save to localStorage
+            let newHighScore = false;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('spaceShooterHighScore', highScore);
+                newHighScore = true;
+            }
+            
+            // Update game over display
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('newHighScore').style.display = newHighScore ? 'block' : 'none';
+            document.getElementById('gameOver').style.display = 'block';
+            updateHighScoreDisplay();
+        }
+
+        // ===== GAME RESTART FUNCTION =====
+        function restartGame() {
+            gameStarted = true;
+            gameRunning = true;
+            score = 0;
+            lives = 5; // Reset to 5 lives
+            bullets = [];
+            enemies = [];
+            particles = [];
+            enemySpawnTimer = 0;
+            enemySpawnRate = 50;
+            autoShootTimer = 0;
+            
+            // Reset player position
+            player.x = canvasBaseWidth / 2 - 75;
+            player.y = canvasBaseHeight - 120;
+            
+            // Restart background music
+            if (soundEnabled) {
+                sounds.background.currentTime = 0;
+                sounds.background.play().catch(e => console.log('Background music restart failed:', e));
+            }
+            
+            // Hide game over screen, show game UI
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            
+            // Show mobile UI on mobile devices
+            if (window.innerWidth <= 768) {
+                document.getElementById('mobileUI').style.display = 'flex';
+            }
+            
+            updateLivesDisplay();
+            updateUI();
+        }
+
+        // ===== MAIN GAME LOOP =====
+        function gameLoop() {
+            // Clear entire canvas
+            ctx.clearRect(0, 0, canvasBaseWidth, canvasBaseHeight);
+            
+            // Always draw background
+            drawBackground();
+            
+            // Only update and draw game objects if game is running
+            if (gameRunning && gameStarted) {
+                // Update all game systems
+                updatePlayer();        // Handle player movement
+                autoShoot();          // Automatic bullet firing
+                updateBullets();      // Move bullets upward
+                updateEnemies();      // Move enemies downward
+                updateParticles();    // Update explosion effects
+                checkCollisions();    // Handle all collision detection
+                
+                // Enemy spawning with increasing difficulty
+                enemySpawnTimer++;
+                if (enemySpawnTimer > enemySpawnRate) {
+                    spawnEnemy();
+                    enemySpawnTimer = 0;
+                    
+                    // Gradually increase difficulty by spawning enemies faster
+                    if (enemySpawnRate > 25) {
+                        enemySpawnRate -= 0.2;
+                    }
+                }
+                
+                // Draw all game objects
+                drawPlayer();
+                drawBullets();
+                drawEnemies();
+            }
+            
+            // Always draw particles (explosion effects)
+            drawParticles();
+            
+            // Continue game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ===== GAME INITIALIZATION =====
+        // Initialize all game systems when page loads
+        createStars();              // Generate background stars
+        setupMobileControls();      // Set up touch controls
+        updateHighScoreDisplay();   // Show saved high score
+        updateUI();                 // Initialize UI displays
+        gameLoop();                 // Start the main game loop
+    </script>
 </body>
 </html>
