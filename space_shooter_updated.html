@@ -32,12 +32,16 @@
             box-shadow: 0 0 20px #00ffff, inset 0 0 20px rgba(0, 255, 255, 0.1);
             background: radial-gradient(circle at center, rgba(0, 20, 40, 0.8) 0%, rgba(0, 10, 30, 0.9) 100%);
             margin-bottom: 20px;
+            width: fit-content;
+            max-width: 95vw;
         }
 
         #gameCanvas {
             display: block;
             border-radius: 8px;
             background: transparent;
+            max-width: 100%;
+            height: auto;
         }
 
         /* Desktop UI - positioned over canvas */
@@ -290,6 +294,8 @@
             
             #mobileUI {
                 display: flex;
+                width: 95vw;
+                max-width: none;
             }
             
             #ui {
@@ -298,16 +304,15 @@
             
             #gameContainer {
                 margin-bottom: 15px;
-            }
-            
-            #gameCanvas {
-                width: 95vw;
-                height: auto;
-                max-width: 450px;
+                width: fit-content;
+                max-width: 95vw;
             }
             
             body {
-                padding: 10px 10px 120px 10px;
+                padding: 10px 10px 140px 10px;
+                min-height: 100vh;
+                justify-content: flex-start;
+                padding-top: 20px;
             }
             
             .mobile-btn {
@@ -326,7 +331,7 @@
 
             #chatHistory {
                 position: fixed;
-                bottom: 120px;
+                bottom: 140px;
                 right: 15px;
                 font-size: 11px;
                 padding: 6px 10px;
@@ -335,9 +340,8 @@
 
         /* Desktop styles */
         @media (min-width: 769px) {
-            #gameCanvas {
-                width: 800px;
-                height: 600px;
+            #gameContainer {
+                width: fit-content;
             }
         }
 
@@ -350,12 +354,12 @@
             }
 
             #mobileControls {
-                bottom: 15px;
+                bottom: 20px;
                 padding: 0 15px;
             }
 
             #chatHistory {
-                bottom: 105px;
+                bottom: 120px;
                 right: 10px;
                 font-size: 10px;
                 padding: 5px 8px;
@@ -365,6 +369,39 @@
                 width: 40px;
                 height: 40px;
                 font-size: 16px;
+            }
+
+            body {
+                padding: 10px 5px 120px 5px;
+            }
+
+            #mobileUI {
+                width: 95vw;
+                font-size: 14px;
+                padding: 12px 15px;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 360px) {
+            .mobile-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+
+            #mobileControls {
+                bottom: 15px;
+                padding: 0 10px;
+            }
+
+            #mobileUI {
+                font-size: 13px;
+                padding: 10px 12px;
+            }
+
+            body {
+                padding: 8px 3px 110px 3px;
             }
         }
     </style>
@@ -432,16 +469,48 @@
     </div>
 
     <script>
-        // ===== CANVAS SETUP AND HIGH DPI HANDLING =====
+        // ===== CANVAS SETUP AND RESPONSIVE SCALING =====
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Handle high DPI displays for crisp rendering
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
+        // Base game dimensions
+        const canvasBaseWidth = 800;
+        const canvasBaseHeight = 600;
+        let canvasScale = 1;
+        
+        // Handle responsive canvas sizing
+        function resizeCanvas() {
+            const container = document.getElementById('gameContainer');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // Mobile: fit to screen width with aspect ratio maintained
+                const maxWidth = window.innerWidth * 0.95;
+                const maxHeight = window.innerHeight * 0.6; // Leave space for UI and controls
+                
+                const widthScale = maxWidth / canvasBaseWidth;
+                const heightScale = maxHeight / canvasBaseHeight;
+                canvasScale = Math.min(widthScale, heightScale, 1); // Don't scale up beyond 1x
+                
+                canvas.style.width = (canvasBaseWidth * canvasScale) + 'px';
+                canvas.style.height = (canvasBaseHeight * canvasScale) + 'px';
+            } else {
+                // Desktop: fixed size
+                canvasScale = 1;
+                canvas.style.width = canvasBaseWidth + 'px';
+                canvas.style.height = canvasBaseHeight + 'px';
+            }
+            
+            // Handle high DPI displays
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = canvasBaseWidth * dpr;
+            canvas.height = canvasBaseHeight * dpr;
+            ctx.scale(dpr, dpr);
+        }
+        
+        // Initial resize and add resize listener
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
         // ===== GAME STATE VARIABLES =====
         let gameStarted = false;
@@ -968,7 +1037,7 @@
             gameStarted = true;
             gameRunning = true;
             score = 0;
-            lives = 5; // Reset to 5 lives
+            lives = 3; // Reset to 3 lives
             bullets = [];
             enemies = [];
             particles = [];
