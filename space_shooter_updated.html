@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Space Shooter - Game By Karuna</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -36,6 +40,7 @@
             background: transparent;
         }
 
+        /* Desktop UI - positioned over canvas */
         #ui {
             position: absolute;
             top: 20px;
@@ -47,6 +52,7 @@
             display: none;
         }
 
+        /* Mobile UI - positioned above canvas */
         #mobileUI {
             display: none;
             justify-content: space-between;
@@ -80,6 +86,7 @@
             margin-right: 3px;
         }
 
+        /* Lives container for both desktop and mobile */
         #livesContainer {
             display: flex;
             align-items: center;
@@ -92,11 +99,12 @@
         }
 
         .heart {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             margin-right: 5px;
         }
 
+        /* Start screen and game over overlay */
         #startScreen, #gameOver {
             position: absolute;
             top: 50%;
@@ -138,32 +146,18 @@
             to { text-shadow: 0 0 30px #00ffff, 0 0 40px #00ffff; }
         }
 
+        /* Mobile controls positioned at screen edges */
         #mobileControls {
             display: none;
-            justify-content: center;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            justify-content: space-between;
             align-items: center;
-            width: 100%;
-            max-width: 300px;
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 15px;
-            border: 2px solid #00ffff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .dpad {
-            display: grid;
-            grid-template-columns: 70px 70px 70px;
-            grid-template-rows: 70px 70px 70px;
-            gap: 8px;
-            position: relative;
+            padding: 0 20px;
+            z-index: 15;
+            pointer-events: none;
         }
 
         .mobile-btn {
@@ -171,10 +165,10 @@
             border: 3px solid #00ffff;
             border-radius: 15px;
             color: #00ffff;
-            font-size: 24px;
+            font-size: 32px;
             font-weight: bold;
-            width: 70px;
-            height: 70px;
+            width: 90px;
+            height: 90px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -183,6 +177,7 @@
             cursor: pointer;
             transition: all 0.1s ease;
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            pointer-events: auto;
         }
 
         .mobile-btn:active {
@@ -191,29 +186,62 @@
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
         }
 
-        #upBtn { grid-column: 2; grid-row: 1; }
-        #leftBtn { grid-column: 1; grid-row: 2; }
-        #rightBtn { grid-column: 3; grid-row: 2; }
-        #downBtn { grid-column: 2; grid-row: 3; }
-
-        #shootBtn {
-            background: rgba(255, 255, 0, 0.3);
-            border-color: #ffff00;
-            color: #ffff00;
-            width: 70px;
-            height: 70px;
-            font-size: 14px;
-            border-radius: 50%;
-            box-shadow: 0 0 15px rgba(255, 255, 0, 0.4);
-            grid-column: 2;
-            grid-row: 2;
+        /* Sound toggle button */
+        #soundToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 255, 255, 0.3);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            font-size: 20px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s ease;
         }
 
-        #shootBtn:active {
-            background: rgba(255, 255, 0, 0.6);
-            box-shadow: 0 0 30px rgba(255, 255, 0, 0.8);
+        #soundToggle:hover {
+            background: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
         }
 
+        #soundToggle.muted {
+            background: rgba(255, 68, 68, 0.3);
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        /* Chat history link */
+        #chatHistory {
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        #chatHistory a {
+            color: #00ffff;
+            text-decoration: none;
+            text-shadow: 0 0 5px #00ffff;
+            transition: all 0.3s ease;
+        }
+
+        #chatHistory a:hover {
+            color: #ffffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        /* Background star animation */
         .star {
             position: absolute;
             background: white;
@@ -227,6 +255,7 @@
             100% { opacity: 1; }
         }
 
+        /* Button styling */
         button {
             background: linear-gradient(45deg, #00ffff, #0088ff);
             border: none;
@@ -252,6 +281,7 @@
             transform: translateY(0px);
         }
 
+        /* Mobile responsive styles */
         @media (max-width: 768px) {
             #mobileControls {
                 display: flex;
@@ -276,37 +306,64 @@
             }
             
             body {
-                padding: 10px;
+                padding: 10px 10px 120px 10px;
             }
             
             .mobile-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 20px;
+                width: 80px;
+                height: 80px;
+                font-size: 28px;
             }
-            
-            .dpad {
-                grid-template-columns: 60px 60px 60px;
-                grid-template-rows: 60px 60px 60px;
-                gap: 6px;
+
+            #soundToggle {
+                top: 15px;
+                right: 15px;
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
             }
-            
-            #shootBtn {
-                width: 60px;
-                height: 60px;
-                font-size: 12px;
-            }
-            
-            #mobileControls {
-                max-width: 250px;
-                margin-top: 15px;
+
+            #chatHistory {
+                position: fixed;
+                bottom: 120px;
+                right: 15px;
+                font-size: 11px;
+                padding: 6px 10px;
             }
         }
 
+        /* Desktop styles */
         @media (min-width: 769px) {
             #gameCanvas {
                 width: 800px;
                 height: 600px;
+            }
+        }
+
+        /* Small mobile styles */
+        @media (max-width: 480px) {
+            .mobile-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 24px;
+            }
+
+            #mobileControls {
+                bottom: 15px;
+                padding: 0 15px;
+            }
+
+            #chatHistory {
+                bottom: 105px;
+                right: 10px;
+                font-size: 10px;
+                padding: 5px 8px;
+            }
+
+            #soundToggle {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
             }
         }
     </style>
@@ -329,6 +386,9 @@
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         
+        <!-- Sound toggle button -->
+        <div id="soundToggle" title="Toggle Sound">🔊</div>
+        
         <div id="startScreen">
             <div id="gameTitle">Space Shooter</div>
             <p>Game By Karuna</p>
@@ -336,12 +396,13 @@
             <p id="highScoreDisplay" style="color: #ffff00; font-size: 18px; margin: 15px 0;"></p>
             <button onclick="startGame()">Start Game</button>
             <div style="margin-top: 30px; font-size: 16px; color: #888;">
-                <div>Arrow Keys / WASD: Move</div>
-                <div>Spacebar: Shoot</div>
-                <div style="font-size: 14px; margin-top: 10px;">Mobile: Use controls below</div>
+                <div>Left/Right Arrow Keys: Move</div>
+                <div>Automatic Firing</div>
+                <div style="font-size: 14px; margin-top: 10px;">Mobile: Use edge buttons</div>
             </div>
         </div>
         
+        <!-- Desktop UI - overlaid on canvas -->
         <div id="ui">
             <div>Score: <span id="score">0</span></div>
             <div>High Score: <span id="highScore">0</span></div>
@@ -353,41 +414,90 @@
         <div id="gameOver">
             <h2>Game Over!</h2>
             <p>Final Score: <span id="finalScore">0</span></p>
-            <p id="newHighScore" style="color: #ffff00; display: none; font-size: 20px; margin: 15px 0; animation: glow 1s ease-in-out infinite alternate;">🎉 NEW HIGH SCORE! 🎉</p>
+            <p id="newHighScore" style="color: #ffff00; display: none; font-size: 20px; margin: 15px 0; animation: glow 1s ease-in-out infinite alternate;">NEW HIGH SCORE!</p>
             <button onclick="restartGame()">Play Again</button>
         </div>
     </div>
 
+    <!-- Chat History Link - visible on both desktop and mobile -->
+    <div id="chatHistory">
+        <a href="https://claude.ai/share/b45f9845-b341-42f0-8721-fedcdf39d494" target="_blank">View AI Chat History →</a>
+    </div>
+
+    <!-- Mobile Controls - positioned at screen edges, only visible on mobile -->
     <div id="mobileControls">
-        <div class="control-group">
-            <div class="dpad">
-                <div></div>
-                <button class="mobile-btn" id="upBtn">↑</button>
-                <div></div>
-                <button class="mobile-btn" id="leftBtn">←</button>
-                <button class="mobile-btn" id="shootBtn">FIRE</button>
-                <button class="mobile-btn" id="rightBtn">→</button>
-                <div></div>
-                <button class="mobile-btn" id="downBtn">↓</button>
-                <div></div>
-            </div>
-        </div>
+        <button class="mobile-btn" id="leftBtn">←</button>
+        <button class="mobile-btn" id="rightBtn">→</button>
     </div>
 
     <script>
+        // ===== CANVAS SETUP AND HIGH DPI HANDLING =====
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Game state
+        // Handle high DPI displays for crisp rendering
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+
+        // ===== GAME STATE VARIABLES =====
         let gameStarted = false;
         let gameRunning = false;
         let score = 0;
-        let highScore = parseInt(localStorage.getItem('spaceShooterHighScore')) || 0;
-        let lives = 5;
+        let lives = 5; // Start with 5 lives as required
         let keys = {};
         let mobileControls = {};
         
-        // Image assets
+        // Automatic firing system - shoots continuously when game is running
+        let autoShootTimer = 0;
+        let autoShootRate = 6; // Fire every 6 frames (about 10 bullets/second at 60fps)
+
+        // ===== HIGH SCORE PERSISTENCE WITH LOCALSTORAGE =====
+        // Retrieve saved high score from browser storage, default to 0 if none exists
+        let highScore = parseInt(localStorage.getItem('spaceShooterHighScore')) || 0;
+
+        // ===== SOUND SYSTEM =====
+        let soundEnabled = true; // Default sound ON
+        const sounds = {
+            enemyHit: new Audio('assets/enemyhit.wav'),
+            gameOver: new Audio('assets/gameover.wav'),
+            background: new Audio('assets/backgroundsound.mp3')
+        };
+
+        // Preload all sounds and set up looping for background music
+        sounds.background.loop = true;
+        sounds.background.volume = 0.3; // Lower volume for background music
+
+        // Sound control functions
+        function playSound(soundName) {
+            if (soundEnabled && sounds[soundName]) {
+                sounds[soundName].currentTime = 0; // Reset to start
+                sounds[soundName].play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const toggleBtn = document.getElementById('soundToggle');
+            
+            if (soundEnabled) {
+                toggleBtn.textContent = '🔊';
+                toggleBtn.classList.remove('muted');
+                toggleBtn.title = 'Mute Sound';
+                if (gameRunning) {
+                    sounds.background.play().catch(e => console.log('Background music failed:', e));
+                }
+            } else {
+                toggleBtn.textContent = '🔇';
+                toggleBtn.classList.add('muted');
+                toggleBtn.title = 'Unmute Sound';
+                sounds.background.pause();
+            }
+        }
+
+        // ===== IMAGE ASSETS =====
         const images = {
             player: new Image(),
             enemy: new Image(),
@@ -399,50 +509,56 @@
         let imagesLoaded = 0;
         const totalImages = 5;
         
-        // Load images from assets folder
+        // Load all images from assets folder
         images.player.src = 'assets/fighter.png';
         images.enemy.src = 'assets/enemy.png';
         images.bullet.src = 'assets/beams.png';
         images.heart.src = 'assets/life.png';
         images.background.src = 'assets/Scene-1.jpg';
         
-        // Handle image loading
+        // Track image loading progress
         function onImageLoad() {
             imagesLoaded++;
         }
         
+        // Set up load handlers with error fallbacks
         images.player.onload = onImageLoad;
         images.enemy.onload = onImageLoad;
         images.bullet.onload = onImageLoad;
         images.heart.onload = onImageLoad;
         images.background.onload = onImageLoad;
         
-        // Fallback for missing images (silent fallback)
         images.player.onerror = onImageLoad;
         images.enemy.onerror = onImageLoad;
         images.bullet.onerror = onImageLoad;
         images.heart.onerror = onImageLoad;
         images.background.onerror = onImageLoad;
+
+        // ===== GAME OBJECTS =====
+        // Base canvas dimensions for consistent scaling
+        const canvasBaseWidth = 800;
+        const canvasBaseHeight = 600;
         
-        // Game objects - Fighter is larger than enemies for better visibility
+        // Player object - large fighter sprite for good mobile visibility
         let player = {
-            x: canvas.width / 2 - 50,
-            y: canvas.height - 120,
-            width: 100,
-            height: 75,
-            speed: 6
+            x: canvasBaseWidth / 2 - 75, // Center horizontally
+            y: canvasBaseHeight - 120,   // Near bottom of screen
+            width: 150,  // Large size for visibility
+            height: 110,
+            speed: 8     // Fast movement speed
         };
         
+        // Game entity arrays
         let bullets = [];
         let enemies = [];
         let particles = [];
-        let backgroundY = 0;
+        let backgroundY = 0; // For scrolling background effect
         
-        // Enemy spawn timer
+        // Enemy spawning control
         let enemySpawnTimer = 0;
-        let enemySpawnRate = 60;
-        
-        // Display high score
+        let enemySpawnRate = 50; // Spawn every 50 frames initially
+
+        // ===== HIGH SCORE DISPLAY FUNCTIONS =====
         function updateHighScoreDisplay() {
             document.getElementById('highScore').textContent = highScore;
             const display = document.getElementById('highScoreDisplay');
@@ -453,8 +569,8 @@
                 display.style.display = 'none';
             }
         }
-        
-        // Create background stars
+
+        // ===== BACKGROUND STAR GENERATION =====
         function createStars() {
             const starsContainer = document.getElementById('stars');
             for (let i = 0; i < 50; i++) {
@@ -467,39 +583,31 @@
                 starsContainer.appendChild(star);
             }
         }
-        
-        // Input handling
+
+        // ===== INPUT HANDLING =====
+        // Desktop keyboard input - only left and right arrow keys used
         document.addEventListener('keydown', (e) => {
             keys[e.key] = true;
-            keys[e.key.toLowerCase()] = true;
-            if (e.key === ' ' || e.key === 'Enter') {
-                e.preventDefault();
-                shoot();
-            }
         });
         
         document.addEventListener('keyup', (e) => {
             keys[e.key] = false;
-            keys[e.key.toLowerCase()] = false;
         });
-        
-        // Mobile controls setup
+
+        // Mobile touch controls setup
         function setupMobileControls() {
             const controls = {
                 leftBtn: 'left',
-                rightBtn: 'right',
-                upBtn: 'up',
-                downBtn: 'down',
-                shootBtn: 'shoot'
+                rightBtn: 'right'
             };
             
             Object.entries(controls).forEach(([id, action]) => {
                 const btn = document.getElementById(id);
                 if (btn) {
+                    // Touch events for mobile
                     btn.addEventListener('touchstart', (e) => {
                         e.preventDefault();
                         mobileControls[action] = true;
-                        if (action === 'shoot') shoot();
                     });
                     
                     btn.addEventListener('touchend', (e) => {
@@ -507,10 +615,10 @@
                         mobileControls[action] = false;
                     });
                     
+                    // Mouse events for desktop testing
                     btn.addEventListener('mousedown', (e) => {
                         e.preventDefault();
                         mobileControls[action] = true;
-                        if (action === 'shoot') shoot();
                     });
                     
                     btn.addEventListener('mouseup', (e) => {
@@ -520,53 +628,62 @@
                 }
             });
         }
-        
-        // Player movement
+
+        // Sound toggle button setup
+        document.getElementById('soundToggle').addEventListener('click', toggleSound);
+
+        // ===== PLAYER MOVEMENT (LEFT/RIGHT ONLY) =====
         function updatePlayer() {
-            const moveLeft = keys['ArrowLeft'] || keys['a'] || mobileControls.left;
-            const moveRight = keys['ArrowRight'] || keys['d'] || mobileControls.right;
-            const moveUp = keys['ArrowUp'] || keys['w'] || mobileControls.up;
-            const moveDown = keys['ArrowDown'] || keys['s'] || mobileControls.down;
+            const moveLeft = keys['ArrowLeft'] || mobileControls.left;
+            const moveRight = keys['ArrowRight'] || mobileControls.right;
             
+            // Horizontal movement with screen boundary checking
             if (moveLeft && player.x > 0) {
                 player.x -= player.speed;
             }
-            if (moveRight && player.x < canvas.width - player.width) {
+            if (moveRight && player.x < canvasBaseWidth - player.width) {
                 player.x += player.speed;
             }
-            if (moveUp && player.y > 0) {
-                player.y -= player.speed;
-            }
-            if (moveDown && player.y < canvas.height - player.height) {
-                player.y += player.speed;
-            }
         }
-        
-        // Shooting
-        function shoot() {
+
+        // ===== AUTOMATIC FIRING SYSTEM =====
+        // Continuously shoots bullets when game is running - no manual input required
+        function autoShoot() {
             if (gameRunning && gameStarted) {
-                bullets.push({
-                    x: player.x + player.width / 2 - 5,
-                    y: player.y,
-                    width: 10,
-                    height: 25,
-                    speed: 8
-                });
+                autoShootTimer++;
+                if (autoShootTimer >= autoShootRate) {
+                    // Create new bullet at player center, moving upward
+                    bullets.push({
+                        x: player.x + player.width / 2 - 8, // Center on player
+                        y: player.y - 10,                   // Start above player
+                        width: 16,
+                        height: 35,
+                        speed: 12 // Fast bullet speed
+                    });
+                    autoShootTimer = 0; // Reset timer
+                }
             }
         }
-        
-        // Start game
+
+        // ===== GAME LIFECYCLE FUNCTIONS =====
         function startGame() {
             gameStarted = true;
             gameRunning = true;
-            lives = 5;
+            lives = 5; // Reset to 5 lives
             score = 0;
             bullets = [];
             enemies = [];
             particles = [];
             enemySpawnTimer = 0;
-            enemySpawnRate = 60;
+            enemySpawnRate = 50;
+            autoShootTimer = 0;
             
+            // Start background music
+            if (soundEnabled) {
+                sounds.background.play().catch(e => console.log('Background music failed:', e));
+            }
+            
+            // Hide start screen, show game UI
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('ui').style.display = 'block';
             
@@ -578,62 +695,65 @@
             updateLivesDisplay();
             updateUI();
         }
-        
-        // Enemy spawning - smaller than player for better gameplay balance
+
+        // Enemy spawning with random positioning
         function spawnEnemy() {
             enemies.push({
-                x: Math.random() * (canvas.width - 60),
-                y: -60,
-                width: 60,
-                height: 45,
-                speed: 2 + Math.random() * 3,
+                x: Math.random() * (canvasBaseWidth - 80), // Random x position
+                y: -80,  // Start above screen
+                width: 80,
+                height: 60,
+                speed: 2 + Math.random() * 3, // Variable speed
                 health: 1
             });
         }
-        
-        // Update bullets
+
+        // ===== BULLET MANAGEMENT =====
         function updateBullets() {
             for (let i = bullets.length - 1; i >= 0; i--) {
                 bullets[i].y -= bullets[i].speed;
-                if (bullets[i].y < 0) {
+                // Remove bullets that have left the screen
+                if (bullets[i].y < -bullets[i].height) {
                     bullets.splice(i, 1);
                 }
             }
         }
-        
-        // Update enemies
+
+        // ===== ENEMY MANAGEMENT =====
         function updateEnemies() {
             for (let i = enemies.length - 1; i >= 0; i--) {
                 enemies[i].y += enemies[i].speed;
-                if (enemies[i].y > canvas.height) {
+                // Check if enemy has passed the bottom of screen
+                if (enemies[i].y > canvasBaseHeight) {
                     enemies.splice(i, 1);
-                    // Lose life when enemy passes bottom
-                    loseLife();
+                    loseLife(); // Lose life for missed enemy
                 }
             }
         }
-        
-        // Lose life function
+
+        // ===== LIVES SYSTEM WITH HEART ICONS =====
+        // Function called when player loses a life (collision or missed enemy)
         function loseLife() {
             lives--;
-            updateLivesDisplay();
+            updateLivesDisplay(); // Update heart display
             updateUI();
             
+            // Check for game over condition
             if (lives <= 0) {
                 gameOver();
             }
         }
-        
-        // Update lives display with heart images
+
+        // Update visual heart display for both desktop and mobile
         function updateLivesDisplay() {
             const heartsDisplay = document.getElementById('heartsDisplay');
             const mobileHeartsDisplay = document.getElementById('mobileHeartsDisplay');
             
-            // Clear both displays
+            // Clear existing hearts
             heartsDisplay.innerHTML = '';
             mobileHeartsDisplay.innerHTML = '';
             
-            // Update both desktop and mobile hearts
+            // Create heart icons for current lives count
             for (let i = 0; i < lives; i++) {
                 // Desktop hearts
                 if (images.heart.complete && images.heart.naturalWidth > 0) {
@@ -648,15 +768,14 @@
                     mobileHeartImg.className = 'heart';
                     mobileHeartsDisplay.appendChild(mobileHeartImg);
                 } else {
-                    // Fallback to text hearts for desktop
+                    // Fallback to text hearts if image fails
                     const heart = document.createElement('span');
                     heart.textContent = '♥';
                     heart.style.color = '#ff4444';
                     heart.style.marginRight = '5px';
-                    heart.style.fontSize = '20px';
+                    heart.style.fontSize = '22px';
                     heartsDisplay.appendChild(heart);
                     
-                    // Fallback to text hearts for mobile
                     const mobileHeart = document.createElement('span');
                     mobileHeart.textContent = '♥';
                     mobileHeart.style.color = '#ff4444';
@@ -666,10 +785,10 @@
                 }
             }
         }
-        
-        // Collision detection
+
+        // ===== COLLISION DETECTION =====
         function checkCollisions() {
-            // Bullet-enemy collisions
+            // Bullet vs Enemy collisions
             for (let i = bullets.length - 1; i >= 0; i--) {
                 for (let j = enemies.length - 1; j >= 0; j--) {
                     if (bullets[i] && enemies[j] &&
@@ -678,11 +797,17 @@
                         bullets[i].y < enemies[j].y + enemies[j].height &&
                         bullets[i].y + bullets[i].height > enemies[j].y) {
                         
-                        // Create explosion particles
+                        // Create explosion effect
                         createExplosion(enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2);
                         
+                        // Play enemy hit sound
+                        playSound('enemyHit');
+                        
+                        // Remove bullet and enemy
                         bullets.splice(i, 1);
                         enemies.splice(j, 1);
+                        
+                        // Increase score
                         score += 10;
                         updateUI();
                         break;
@@ -690,7 +815,7 @@
                 }
             }
             
-            // Player-enemy collisions
+            // Player vs Enemy collisions
             for (let i = enemies.length - 1; i >= 0; i--) {
                 if (enemies[i].x < player.x + player.width &&
                     enemies[i].x + enemies[i].width > player.x &&
@@ -699,27 +824,26 @@
                     
                     createExplosion(enemies[i].x + enemies[i].width / 2, enemies[i].y + enemies[i].height / 2);
                     enemies.splice(i, 1);
-                    loseLife();
+                    loseLife(); // Lose life on collision
                 }
             }
         }
-        
-        // Create explosion effect
+
+        // ===== VISUAL EFFECTS =====
         function createExplosion(x, y) {
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 15; i++) {
                 particles.push({
                     x: x,
                     y: y,
-                    vx: (Math.random() - 0.5) * 8,
-                    vy: (Math.random() - 0.5) * 8,
-                    life: 30,
-                    maxLife: 30,
-                    size: Math.random() * 5 + 2
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.5) * 12,
+                    life: 50,
+                    maxLife: 50,
+                    size: Math.random() * 8 + 3
                 });
             }
         }
-        
-        // Update particles
+
         function updateParticles() {
             for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
@@ -732,94 +856,98 @@
                 }
             }
         }
-        
-        // Drawing functions
+
+        // ===== DRAWING FUNCTIONS =====
         function drawBackground() {
             if (images.background.complete && images.background.naturalWidth > 0) {
-                // Scrolling background
-                ctx.drawImage(images.background, 0, backgroundY, canvas.width, canvas.height);
-                ctx.drawImage(images.background, 0, backgroundY - canvas.height, canvas.width, canvas.height);
-                backgroundY += 1.5;
-                if (backgroundY >= canvas.height) {
-                    backgroundY = 0;
+                // Create scrolling effect by drawing image twice
+                ctx.drawImage(images.background, 0, backgroundY, canvasBaseWidth, canvasBaseHeight);
+                ctx.drawImage(images.background, 0, backgroundY - canvasBaseHeight, canvasBaseWidth, canvasBaseHeight);
+                backgroundY += 2.5; // Scroll speed
+                if (backgroundY >= canvasBaseHeight) {
+                    backgroundY = 0; // Reset position for seamless loop
                 }
             } else {
-                // Fallback gradient
-                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                // Fallback gradient background if image fails to load
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvasBaseHeight);
                 gradient.addColorStop(0, '#001122');
                 gradient.addColorStop(1, '#000033');
                 ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillRect(0, 0, canvasBaseWidth, canvasBaseHeight);
             }
         }
-        
+
         function drawPlayer() {
             if (images.player.complete && images.player.naturalWidth > 0) {
                 ctx.drawImage(images.player, player.x, player.y, player.width, player.height);
             } else {
-                // Fallback to colored rectangle with glow
+                // Fallback colored rectangle with glow effect
                 ctx.fillStyle = '#00ffff';
                 ctx.shadowColor = '#00ffff';
-                ctx.shadowBlur = 15;
+                ctx.shadowBlur = 20;
                 ctx.fillRect(player.x, player.y, player.width, player.height);
                 ctx.shadowBlur = 0;
             }
         }
-        
+
         function drawBullets() {
             bullets.forEach(bullet => {
                 if (images.bullet.complete && images.bullet.naturalWidth > 0) {
                     ctx.drawImage(images.bullet, bullet.x, bullet.y, bullet.width, bullet.height);
                 } else {
-                    // Fallback to colored rectangle with glow
+                    // Fallback colored rectangle with glow
                     ctx.fillStyle = '#ffff00';
                     ctx.shadowColor = '#ffff00';
-                    ctx.shadowBlur = 8;
+                    ctx.shadowBlur = 10;
                     ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
                     ctx.shadowBlur = 0;
                 }
             });
         }
-        
+
         function drawEnemies() {
             enemies.forEach(enemy => {
                 if (images.enemy.complete && images.enemy.naturalWidth > 0) {
                     ctx.drawImage(images.enemy, enemy.x, enemy.y, enemy.width, enemy.height);
                 } else {
-                    // Fallback to colored rectangle with glow
+                    // Fallback colored rectangle with glow
                     ctx.fillStyle = '#ff4444';
                     ctx.shadowColor = '#ff4444';
-                    ctx.shadowBlur = 10;
+                    ctx.shadowBlur = 12;
                     ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
                     ctx.shadowBlur = 0;
                 }
             });
         }
-        
+
         function drawParticles() {
             particles.forEach(p => {
                 let alpha = p.life / p.maxLife;
-                ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`;
+                ctx.fillStyle = `rgba(255, 120, 0, ${alpha})`;
                 ctx.fillRect(p.x, p.y, p.size, p.size);
             });
         }
-        
-        // UI updates
+
+        // ===== UI UPDATE FUNCTIONS =====
         function updateUI() {
-            // Update desktop UI
+            // Update desktop UI elements
             document.getElementById('score').textContent = score;
             document.getElementById('highScore').textContent = highScore;
             
-            // Update mobile UI
+            // Update mobile UI elements
             document.getElementById('mobileScore').textContent = score;
             document.getElementById('mobileHighScore').textContent = highScore;
         }
-        
-        // Game over
+
+        // ===== GAME OVER HANDLING =====
         function gameOver() {
             gameRunning = false;
             
-            // Check for high score
+            // Stop background music and play game over sound
+            sounds.background.pause();
+            playSound('gameOver');
+            
+            // Check for new high score and save to localStorage
             let newHighScore = false;
             if (score > highScore) {
                 highScore = score;
@@ -827,26 +955,37 @@
                 newHighScore = true;
             }
             
+            // Update game over display
             document.getElementById('finalScore').textContent = score;
             document.getElementById('newHighScore').style.display = newHighScore ? 'block' : 'none';
             document.getElementById('gameOver').style.display = 'block';
             updateHighScoreDisplay();
         }
-        
-        // Restart game
+
+        // ===== GAME RESTART FUNCTION =====
         function restartGame() {
             gameStarted = true;
             gameRunning = true;
             score = 0;
-            lives = 5;
+            lives = 5; // Reset to 5 lives
             bullets = [];
             enemies = [];
             particles = [];
             enemySpawnTimer = 0;
-            enemySpawnRate = 60;
-            player.x = canvas.width / 2 - 50;
-            player.y = canvas.height - 120;
+            enemySpawnRate = 50;
+            autoShootTimer = 0;
             
+            // Reset player position
+            player.x = canvasBaseWidth / 2 - 75;
+            player.y = canvasBaseHeight - 120;
+            
+            // Restart background music
+            if (soundEnabled) {
+                sounds.background.currentTime = 0;
+                sounds.background.play().catch(e => console.log('Background music restart failed:', e));
+            }
+            
+            // Hide game over screen, show game UI
             document.getElementById('gameOver').style.display = 'none';
             document.getElementById('ui').style.display = 'block';
             
@@ -858,52 +997,57 @@
             updateLivesDisplay();
             updateUI();
         }
-        
-        // Game loop
+
+        // ===== MAIN GAME LOOP =====
         function gameLoop() {
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Clear entire canvas
+            ctx.clearRect(0, 0, canvasBaseWidth, canvasBaseHeight);
             
-            // Draw background
+            // Always draw background
             drawBackground();
             
+            // Only update and draw game objects if game is running
             if (gameRunning && gameStarted) {
-                // Update game objects
-                updatePlayer();
-                updateBullets();
-                updateEnemies();
-                updateParticles();
-                checkCollisions();
+                // Update all game systems
+                updatePlayer();        // Handle player movement
+                autoShoot();          // Automatic bullet firing
+                updateBullets();      // Move bullets upward
+                updateEnemies();      // Move enemies downward
+                updateParticles();    // Update explosion effects
+                checkCollisions();    // Handle all collision detection
                 
-                // Spawn enemies
+                // Enemy spawning with increasing difficulty
                 enemySpawnTimer++;
                 if (enemySpawnTimer > enemySpawnRate) {
                     spawnEnemy();
                     enemySpawnTimer = 0;
-                    // Gradually increase difficulty
+                    
+                    // Gradually increase difficulty by spawning enemies faster
                     if (enemySpawnRate > 25) {
-                        enemySpawnRate -= 0.3;
+                        enemySpawnRate -= 0.2;
                     }
                 }
                 
-                // Draw everything
+                // Draw all game objects
                 drawPlayer();
                 drawBullets();
                 drawEnemies();
             }
             
-            // Always draw particles (for explosions)
+            // Always draw particles (explosion effects)
             drawParticles();
             
+            // Continue game loop
             requestAnimationFrame(gameLoop);
         }
-        
-        // Initialize game
-        createStars();
-        setupMobileControls();
-        updateHighScoreDisplay();
-        updateUI();
-        gameLoop();
+
+        // ===== GAME INITIALIZATION =====
+        // Initialize all game systems when page loads
+        createStars();              // Generate background stars
+        setupMobileControls();      // Set up touch controls
+        updateHighScoreDisplay();   // Show saved high score
+        updateUI();                 // Initialize UI displays
+        gameLoop();                 // Start the main game loop
     </script>
 </body>
 </html>
