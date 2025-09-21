@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Shooter-Game By Karuna</title>
+    <title>Space Shooter - Game By Karuna</title>
     <style>
         body {
             margin: 0;
@@ -47,6 +47,39 @@
             display: none;
         }
 
+        #mobileUI {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 450px;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            margin-bottom: 15px;
+            color: #00ffff;
+            font-size: 16px;
+            text-shadow: 0 0 10px #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        #mobileUI #mobileLivesContainer {
+            display: flex;
+            align-items: center;
+        }
+
+        #mobileUI #mobileHeartsDisplay {
+            display: flex;
+            margin-left: 10px;
+        }
+
+        #mobileUI .heart {
+            width: 18px;
+            height: 18px;
+            margin-right: 3px;
+        }
+
         #livesContainer {
             display: flex;
             align-items: center;
@@ -76,6 +109,7 @@
             padding: 40px;
             border-radius: 15px;
             border: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
         }
 
         #startScreen {
@@ -88,6 +122,7 @@
             text-shadow: 0 0 20px #ff4444;
             border-color: #ff4444;
             display: none;
+            box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
         }
 
         #gameTitle {
@@ -95,18 +130,26 @@
             margin-bottom: 20px;
             text-transform: uppercase;
             letter-spacing: 3px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 40px #00ffff; }
         }
 
         #mobileControls {
             display: none;
             justify-content: center;
             align-items: center;
-            gap: 20px;
+            width: 100%;
+            max-width: 300px;
             margin-top: 20px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.7);
             border-radius: 15px;
-            border: 1px solid #00ffff;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
 
         .control-group {
@@ -117,20 +160,21 @@
 
         .dpad {
             display: grid;
-            grid-template-columns: 50px 50px 50px;
-            grid-template-rows: 50px 50px 50px;
-            gap: 5px;
+            grid-template-columns: 70px 70px 70px;
+            grid-template-rows: 70px 70px 70px;
+            gap: 8px;
+            position: relative;
         }
 
         .mobile-btn {
-            background: rgba(0, 255, 255, 0.2);
-            border: 2px solid #00ffff;
-            border-radius: 10px;
+            background: rgba(0, 255, 255, 0.3);
+            border: 3px solid #00ffff;
+            border-radius: 15px;
             color: #00ffff;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
-            width: 50px;
-            height: 50px;
+            width: 70px;
+            height: 70px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -138,11 +182,13 @@
             user-select: none;
             cursor: pointer;
             transition: all 0.1s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
         }
 
         .mobile-btn:active {
-            background: rgba(0, 255, 255, 0.4);
+            background: rgba(0, 255, 255, 0.6);
             transform: scale(0.95);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
         }
 
         #upBtn { grid-column: 2; grid-row: 1; }
@@ -151,13 +197,21 @@
         #downBtn { grid-column: 2; grid-row: 3; }
 
         #shootBtn {
-            background: rgba(255, 255, 0, 0.2);
+            background: rgba(255, 255, 0, 0.3);
             border-color: #ffff00;
             color: #ffff00;
-            width: 80px;
-            height: 80px;
-            font-size: 24px;
+            width: 70px;
+            height: 70px;
+            font-size: 14px;
             border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.4);
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        #shootBtn:active {
+            background: rgba(255, 255, 0, 0.6);
+            box-shadow: 0 0 30px rgba(255, 255, 0, 0.8);
         }
 
         .star {
@@ -186,6 +240,7 @@
             font-family: 'Courier New', monospace;
             text-transform: uppercase;
             letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
         }
 
         button:hover {
@@ -193,19 +248,58 @@
             box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
         }
 
+        button:active {
+            transform: translateY(0px);
+        }
+
         @media (max-width: 768px) {
             #mobileControls {
                 display: flex;
             }
             
+            #mobileUI {
+                display: flex;
+            }
+            
+            #ui {
+                display: none !important;
+            }
+            
             #gameContainer {
-                margin-bottom: 10px;
+                margin-bottom: 15px;
             }
             
             #gameCanvas {
-                width: 90vw;
+                width: 95vw;
                 height: auto;
-                max-width: 400px;
+                max-width: 450px;
+            }
+            
+            body {
+                padding: 10px;
+            }
+            
+            .mobile-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+            
+            .dpad {
+                grid-template-columns: 60px 60px 60px;
+                grid-template-rows: 60px 60px 60px;
+                gap: 6px;
+            }
+            
+            #shootBtn {
+                width: 60px;
+                height: 60px;
+                font-size: 12px;
+            }
+            
+            #mobileControls {
+                max-width: 250px;
+                margin-top: 15px;
             }
         }
 
@@ -221,15 +315,25 @@
     <!-- Background stars -->
     <div id="stars"></div>
     
+    <!-- Mobile UI - appears above canvas on mobile -->
+    <div id="mobileUI">
+        <div>
+            <div>Score: <span id="mobileScore">0</span></div>
+            <div>High: <span id="mobileHighScore">0</span></div>
+        </div>
+        <div id="mobileLivesContainer">
+            Lives: <div id="mobileHeartsDisplay"></div>
+        </div>
+    </div>
+    
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         
         <div id="startScreen">
             <div id="gameTitle">Space Shooter</div>
             <p>Game By Karuna</p>
-            <p><a style="color: red;" href="https://claude.ai/share/b45f9845-b341-42f0-8721-fedcdf39d494" target="_blank">Click here</a> to view AI chat history...</p>
             <p>Defend Earth from the alien invasion!</p>
-            <p id="highScoreDisplay" style="color: #ffff00; font-size: 18px;"></p>
+            <p id="highScoreDisplay" style="color: #ffff00; font-size: 18px; margin: 15px 0;"></p>
             <button onclick="startGame()">Start Game</button>
             <div style="margin-top: 30px; font-size: 16px; color: #888;">
                 <div>Arrow Keys / WASD: Move</div>
@@ -249,7 +353,7 @@
         <div id="gameOver">
             <h2>Game Over!</h2>
             <p>Final Score: <span id="finalScore">0</span></p>
-            <p id="newHighScore" style="color: #ffff00; display: none;">NEW HIGH SCORE!</p>
+            <p id="newHighScore" style="color: #ffff00; display: none; font-size: 20px; margin: 15px 0; animation: glow 1s ease-in-out infinite alternate;">🎉 NEW HIGH SCORE! 🎉</p>
             <button onclick="restartGame()">Play Again</button>
         </div>
     </div>
@@ -261,15 +365,12 @@
                 <button class="mobile-btn" id="upBtn">↑</button>
                 <div></div>
                 <button class="mobile-btn" id="leftBtn">←</button>
-                <div></div>
+                <button class="mobile-btn" id="shootBtn">FIRE</button>
                 <button class="mobile-btn" id="rightBtn">→</button>
                 <div></div>
                 <button class="mobile-btn" id="downBtn">↓</button>
                 <div></div>
             </div>
-        </div>
-        <div class="control-group">
-            <button class="mobile-btn" id="shootBtn">FIRE</button>
         </div>
     </div>
 
@@ -298,7 +399,7 @@
         let imagesLoaded = 0;
         const totalImages = 5;
         
-        // Load images
+        // Load images from assets folder
         images.player.src = 'assets/fighter.png';
         images.enemy.src = 'assets/enemy.png';
         images.bullet.src = 'assets/beams.png';
@@ -308,9 +409,6 @@
         // Handle image loading
         function onImageLoad() {
             imagesLoaded++;
-            if (imagesLoaded === totalImages) {
-                console.log('All images loaded successfully');
-            }
         }
         
         images.player.onload = onImageLoad;
@@ -319,20 +417,20 @@
         images.heart.onload = onImageLoad;
         images.background.onload = onImageLoad;
         
-        // Fallback for missing images
-        images.player.onerror = () => console.warn('Fighter image not found, using fallback');
-        images.enemy.onerror = () => console.warn('Enemy image not found, using fallback');
-        images.bullet.onerror = () => console.warn('Beams image not found, using fallback');
-        images.heart.onerror = () => console.warn('Heart image not found, using fallback');
-        images.background.onerror = () => console.warn('Background image not found, using fallback');
+        // Fallback for missing images (silent fallback)
+        images.player.onerror = onImageLoad;
+        images.enemy.onerror = onImageLoad;
+        images.bullet.onerror = onImageLoad;
+        images.heart.onerror = onImageLoad;
+        images.background.onerror = onImageLoad;
         
-        // Game objects
+        // Game objects - Fighter is larger than enemies for better visibility
         let player = {
-            x: canvas.width / 2 - 30,
-            y: canvas.height - 80,
-            width: 60,
-            height: 45,
-            speed: 5
+            x: canvas.width / 2 - 50,
+            y: canvas.height - 120,
+            width: 100,
+            height: 75,
+            speed: 6
         };
         
         let bullets = [];
@@ -350,8 +448,9 @@
             const display = document.getElementById('highScoreDisplay');
             if (highScore > 0) {
                 display.textContent = `High Score: ${highScore}`;
+                display.style.display = 'block';
             } else {
-                display.textContent = '';
+                display.style.display = 'none';
             }
         }
         
@@ -447,11 +546,11 @@
         function shoot() {
             if (gameRunning && gameStarted) {
                 bullets.push({
-                    x: player.x + player.width / 2 - 4,
+                    x: player.x + player.width / 2 - 5,
                     y: player.y,
-                    width: 8,
-                    height: 20,
-                    speed: 7
+                    width: 10,
+                    height: 25,
+                    speed: 8
                 });
             }
         }
@@ -462,20 +561,32 @@
             gameRunning = true;
             lives = 5;
             score = 0;
+            bullets = [];
+            enemies = [];
+            particles = [];
+            enemySpawnTimer = 0;
+            enemySpawnRate = 60;
+            
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('ui').style.display = 'block';
+            
+            // Show mobile UI on mobile devices
+            if (window.innerWidth <= 768) {
+                document.getElementById('mobileUI').style.display = 'flex';
+            }
+            
             updateLivesDisplay();
             updateUI();
         }
         
-        // Enemy spawning
+        // Enemy spawning - smaller than player for better gameplay balance
         function spawnEnemy() {
             enemies.push({
-                x: Math.random() * (canvas.width - 50),
-                y: -50,
-                width: 50,
-                height: 40,
-                speed: 2 + Math.random() * 2,
+                x: Math.random() * (canvas.width - 60),
+                y: -60,
+                width: 60,
+                height: 45,
+                speed: 2 + Math.random() * 3,
                 health: 1
             });
         }
@@ -516,22 +627,42 @@
         // Update lives display with heart images
         function updateLivesDisplay() {
             const heartsDisplay = document.getElementById('heartsDisplay');
-            heartsDisplay.innerHTML = '';
+            const mobileHeartsDisplay = document.getElementById('mobileHeartsDisplay');
             
+            // Clear both displays
+            heartsDisplay.innerHTML = '';
+            mobileHeartsDisplay.innerHTML = '';
+            
+            // Update both desktop and mobile hearts
             for (let i = 0; i < lives; i++) {
+                // Desktop hearts
                 if (images.heart.complete && images.heart.naturalWidth > 0) {
                     const heartImg = document.createElement('img');
                     heartImg.src = 'assets/life.png';
                     heartImg.className = 'heart';
                     heartsDisplay.appendChild(heartImg);
+                    
+                    // Mobile hearts
+                    const mobileHeartImg = document.createElement('img');
+                    mobileHeartImg.src = 'assets/life.png';
+                    mobileHeartImg.className = 'heart';
+                    mobileHeartsDisplay.appendChild(mobileHeartImg);
                 } else {
-                    // Fallback to text hearts
+                    // Fallback to text hearts for desktop
                     const heart = document.createElement('span');
                     heart.textContent = '♥';
                     heart.style.color = '#ff4444';
                     heart.style.marginRight = '5px';
                     heart.style.fontSize = '20px';
                     heartsDisplay.appendChild(heart);
+                    
+                    // Fallback to text hearts for mobile
+                    const mobileHeart = document.createElement('span');
+                    mobileHeart.textContent = '♥';
+                    mobileHeart.style.color = '#ff4444';
+                    mobileHeart.style.marginRight = '3px';
+                    mobileHeart.style.fontSize = '16px';
+                    mobileHeartsDisplay.appendChild(mobileHeart);
                 }
             }
         }
@@ -575,15 +706,15 @@
         
         // Create explosion effect
         function createExplosion(x, y) {
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 10; i++) {
                 particles.push({
                     x: x,
                     y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
                     life: 30,
                     maxLife: 30,
-                    size: Math.random() * 4 + 2
+                    size: Math.random() * 5 + 2
                 });
             }
         }
@@ -608,7 +739,7 @@
                 // Scrolling background
                 ctx.drawImage(images.background, 0, backgroundY, canvas.width, canvas.height);
                 ctx.drawImage(images.background, 0, backgroundY - canvas.height, canvas.width, canvas.height);
-                backgroundY += 1;
+                backgroundY += 1.5;
                 if (backgroundY >= canvas.height) {
                     backgroundY = 0;
                 }
@@ -626,10 +757,10 @@
             if (images.player.complete && images.player.naturalWidth > 0) {
                 ctx.drawImage(images.player, player.x, player.y, player.width, player.height);
             } else {
-                // Fallback to colored rectangle
+                // Fallback to colored rectangle with glow
                 ctx.fillStyle = '#00ffff';
                 ctx.shadowColor = '#00ffff';
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 15;
                 ctx.fillRect(player.x, player.y, player.width, player.height);
                 ctx.shadowBlur = 0;
             }
@@ -640,10 +771,10 @@
                 if (images.bullet.complete && images.bullet.naturalWidth > 0) {
                     ctx.drawImage(images.bullet, bullet.x, bullet.y, bullet.width, bullet.height);
                 } else {
-                    // Fallback to colored rectangle
+                    // Fallback to colored rectangle with glow
                     ctx.fillStyle = '#ffff00';
                     ctx.shadowColor = '#ffff00';
-                    ctx.shadowBlur = 5;
+                    ctx.shadowBlur = 8;
                     ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
                     ctx.shadowBlur = 0;
                 }
@@ -655,10 +786,10 @@
                 if (images.enemy.complete && images.enemy.naturalWidth > 0) {
                     ctx.drawImage(images.enemy, enemy.x, enemy.y, enemy.width, enemy.height);
                 } else {
-                    // Fallback to colored rectangle
+                    // Fallback to colored rectangle with glow
                     ctx.fillStyle = '#ff4444';
                     ctx.shadowColor = '#ff4444';
-                    ctx.shadowBlur = 8;
+                    ctx.shadowBlur = 10;
                     ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
                     ctx.shadowBlur = 0;
                 }
@@ -675,8 +806,13 @@
         
         // UI updates
         function updateUI() {
+            // Update desktop UI
             document.getElementById('score').textContent = score;
-            updateHighScoreDisplay();
+            document.getElementById('highScore').textContent = highScore;
+            
+            // Update mobile UI
+            document.getElementById('mobileScore').textContent = score;
+            document.getElementById('mobileHighScore').textContent = highScore;
         }
         
         // Game over
@@ -694,6 +830,7 @@
             document.getElementById('finalScore').textContent = score;
             document.getElementById('newHighScore').style.display = newHighScore ? 'block' : 'none';
             document.getElementById('gameOver').style.display = 'block';
+            updateHighScoreDisplay();
         }
         
         // Restart game
@@ -707,10 +844,17 @@
             particles = [];
             enemySpawnTimer = 0;
             enemySpawnRate = 60;
-            player.x = canvas.width / 2 - 30;
-            player.y = canvas.height - 80;
+            player.x = canvas.width / 2 - 50;
+            player.y = canvas.height - 120;
+            
             document.getElementById('gameOver').style.display = 'none';
             document.getElementById('ui').style.display = 'block';
+            
+            // Show mobile UI on mobile devices
+            if (window.innerWidth <= 768) {
+                document.getElementById('mobileUI').style.display = 'flex';
+            }
+            
             updateLivesDisplay();
             updateUI();
         }
@@ -737,8 +881,8 @@
                     spawnEnemy();
                     enemySpawnTimer = 0;
                     // Gradually increase difficulty
-                    if (enemySpawnRate > 30) {
-                        enemySpawnRate -= 0.5;
+                    if (enemySpawnRate > 25) {
+                        enemySpawnRate -= 0.3;
                     }
                 }
                 
