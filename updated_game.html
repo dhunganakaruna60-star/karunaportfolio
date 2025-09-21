@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Shooter-Game By Karuna</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(180deg, #0a0a2e 0%, #16213e 50%, #1a1a3e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+        }
+
+        #gameContainer {
+            position: relative;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #00ffff, inset 0 0 20px rgba(0, 255, 255, 0.1);
+            background: radial-gradient(circle at center, rgba(0, 20, 40, 0.8) 0%, rgba(0, 10, 30, 0.9) 100%);
+            margin-bottom: 20px;
+        }
+
+        #gameCanvas {
+            display: block;
+            border-radius: 8px;
+            background: transparent;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ffff;
+            font-size: 18px;
+            text-shadow: 0 0 10px #00ffff;
+            z-index: 10;
+            display: none;
+        }
+
+        #livesContainer {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        #heartsDisplay {
+            display: flex;
+            margin-left: 10px;
+        }
+
+        .heart {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+
+        #startScreen, #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 24px;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+        }
+
+        #startScreen {
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+        }
+
+        #gameOver {
+            color: #ff4444;
+            text-shadow: 0 0 20px #ff4444;
+            border-color: #ff4444;
+            display: none;
+        }
+
+        #gameTitle {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        #mobileControls {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 1px solid #00ffff;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dpad {
+            display: grid;
+            grid-template-columns: 50px 50px 50px;
+            grid-template-rows: 50px 50px 50px;
+            gap: 5px;
+        }
+
+        .mobile-btn {
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            color: #00ffff;
+            font-size: 20px;
+            font-weight: bold;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: manipulation;
+            user-select: none;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .mobile-btn:active {
+            background: rgba(0, 255, 255, 0.4);
+            transform: scale(0.95);
+        }
+
+        #upBtn { grid-column: 2; grid-row: 1; }
+        #leftBtn { grid-column: 1; grid-row: 2; }
+        #rightBtn { grid-column: 3; grid-row: 2; }
+        #downBtn { grid-column: 2; grid-row: 3; }
+
+        #shootBtn {
+            background: rgba(255, 255, 0, 0.2);
+            border-color: #ffff00;
+            color: #ffff00;
+            width: 80px;
+            height: 80px;
+            font-size: 24px;
+            border-radius: 50%;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        button {
+            background: linear-gradient(45deg, #00ffff, #0088ff);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 25px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            #mobileControls {
+                display: flex;
+            }
+            
+            #gameContainer {
+                margin-bottom: 10px;
+            }
+            
+            #gameCanvas {
+                width: 90vw;
+                height: auto;
+                max-width: 400px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            #gameCanvas {
+                width: 800px;
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background stars -->
+    <div id="stars"></div>
+    
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div id="startScreen">
+            <div id="gameTitle">Space Shooter</div>
+            <p>Game By Karuna</p>
+            <p><a style="color: red;" href="https://claude.ai/share/b45f9845-b341-42f0-8721-fedcdf39d494" target="_blank">Click here</a> to view AI chat history...</p>
+            <p>Defend Earth from the alien invasion!</p>
+            <p id="highScoreDisplay" style="color: #ffff00; font-size: 18px;"></p>
+            <button onclick="startGame()">Start Game</button>
+            <div style="margin-top: 30px; font-size: 16px; color: #888;">
+                <div>Arrow Keys / WASD: Move</div>
+                <div>Spacebar: Shoot</div>
+                <div style="font-size: 14px; margin-top: 10px;">Mobile: Use controls below</div>
+            </div>
+        </div>
+        
+        <div id="ui">
+            <div>Score: <span id="score">0</span></div>
+            <div>High Score: <span id="highScore">0</span></div>
+            <div id="livesContainer">
+                Lives: <div id="heartsDisplay"></div>
+            </div>
+        </div>
+        
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p id="newHighScore" style="color: #ffff00; display: none;">NEW HIGH SCORE!</p>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <div id="mobileControls">
+        <div class="control-group">
+            <div class="dpad">
+                <div></div>
+                <button class="mobile-btn" id="upBtn">↑</button>
+                <div></div>
+                <button class="mobile-btn" id="leftBtn">←</button>
+                <div></div>
+                <button class="mobile-btn" id="rightBtn">→</button>
+                <div></div>
+                <button class="mobile-btn" id="downBtn">↓</button>
+                <div></div>
+            </div>
+        </div>
+        <div class="control-group">
+            <button class="mobile-btn" id="shootBtn">FIRE</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state
+        let gameStarted = false;
+        let gameRunning = false;
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('spaceShooterHighScore')) || 0;
+        let lives = 5;
+        let keys = {};
+        let mobileControls = {};
+        
+        // Image assets
+        const images = {
+            player: new Image(),
+            enemy: new Image(),
+            bullet: new Image(),
+            heart: new Image(),
+            background: new Image()
+        };
+        
+        let imagesLoaded = 0;
+        const totalImages = 5;
+        
+        // Load images
+        images.player.src = 'assets/fighter.png';
+        images.enemy.src = 'assets/enemy.png';
+        images.bullet.src = 'assets/beams.png';
+        images.heart.src = 'assets/life.png';
+        images.background.src = 'assets/Scene-1.jpg';
+        
+        // Handle image loading
+        function onImageLoad() {
+            imagesLoaded++;
+            if (imagesLoaded === totalImages) {
+                console.log('All images loaded successfully');
+            }
+        }
+        
+        images.player.onload = onImageLoad;
+        images.enemy.onload = onImageLoad;
+        images.bullet.onload = onImageLoad;
+        images.heart.onload = onImageLoad;
+        images.background.onload = onImageLoad;
+        
+        // Fallback for missing images
+        images.player.onerror = () => console.warn('Fighter image not found, using fallback');
+        images.enemy.onerror = () => console.warn('Enemy image not found, using fallback');
+        images.bullet.onerror = () => console.warn('Beams image not found, using fallback');
+        images.heart.onerror = () => console.warn('Heart image not found, using fallback');
+        images.background.onerror = () => console.warn('Background image not found, using fallback');
+        
+        // Game objects
+        let player = {
+            x: canvas.width / 2 - 30,
+            y: canvas.height - 80,
+            width: 60,
+            height: 45,
+            speed: 5
+        };
+        
+        let bullets = [];
+        let enemies = [];
+        let particles = [];
+        let backgroundY = 0;
+        
+        // Enemy spawn timer
+        let enemySpawnTimer = 0;
+        let enemySpawnRate = 60;
+        
+        // Display high score
+        function updateHighScoreDisplay() {
+            document.getElementById('highScore').textContent = highScore;
+            const display = document.getElementById('highScoreDisplay');
+            if (highScore > 0) {
+                display.textContent = `High Score: ${highScore}`;
+            } else {
+                display.textContent = '';
+            }
+        }
+        
+        // Create background stars
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Input handling
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            keys[e.key.toLowerCase()] = true;
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                shoot();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+            keys[e.key.toLowerCase()] = false;
+        });
+        
+        // Mobile controls setup
+        function setupMobileControls() {
+            const controls = {
+                leftBtn: 'left',
+                rightBtn: 'right',
+                upBtn: 'up',
+                downBtn: 'down',
+                shootBtn: 'shoot'
+            };
+            
+            Object.entries(controls).forEach(([id, action]) => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        mobileControls[action] = true;
+                        if (action === 'shoot') shoot();
+                    });
+                    
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        mobileControls[action] = false;
+                    });
+                    
+                    btn.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        mobileControls[action] = true;
+                        if (action === 'shoot') shoot();
+                    });
+                    
+                    btn.addEventListener('mouseup', (e) => {
+                        e.preventDefault();
+                        mobileControls[action] = false;
+                    });
+                }
+            });
+        }
+        
+        // Player movement
+        function updatePlayer() {
+            const moveLeft = keys['ArrowLeft'] || keys['a'] || mobileControls.left;
+            const moveRight = keys['ArrowRight'] || keys['d'] || mobileControls.right;
+            const moveUp = keys['ArrowUp'] || keys['w'] || mobileControls.up;
+            const moveDown = keys['ArrowDown'] || keys['s'] || mobileControls.down;
+            
+            if (moveLeft && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (moveRight && player.x < canvas.width - player.width) {
+                player.x += player.speed;
+            }
+            if (moveUp && player.y > 0) {
+                player.y -= player.speed;
+            }
+            if (moveDown && player.y < canvas.height - player.height) {
+                player.y += player.speed;
+            }
+        }
+        
+        // Shooting
+        function shoot() {
+            if (gameRunning && gameStarted) {
+                bullets.push({
+                    x: player.x + player.width / 2 - 4,
+                    y: player.y,
+                    width: 8,
+                    height: 20,
+                    speed: 7
+                });
+            }
+        }
+        
+        // Start game
+        function startGame() {
+            gameStarted = true;
+            gameRunning = true;
+            lives = 5;
+            score = 0;
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            updateLivesDisplay();
+            updateUI();
+        }
+        
+        // Enemy spawning
+        function spawnEnemy() {
+            enemies.push({
+                x: Math.random() * (canvas.width - 50),
+                y: -50,
+                width: 50,
+                height: 40,
+                speed: 2 + Math.random() * 2,
+                health: 1
+            });
+        }
+        
+        // Update bullets
+        function updateBullets() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].y -= bullets[i].speed;
+                if (bullets[i].y < 0) {
+                    bullets.splice(i, 1);
+                }
+            }
+        }
+        
+        // Update enemies
+        function updateEnemies() {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                enemies[i].y += enemies[i].speed;
+                if (enemies[i].y > canvas.height) {
+                    enemies.splice(i, 1);
+                    // Lose life when enemy passes bottom
+                    loseLife();
+                }
+            }
+        }
+        
+        // Lose life function
+        function loseLife() {
+            lives--;
+            updateLivesDisplay();
+            updateUI();
+            
+            if (lives <= 0) {
+                gameOver();
+            }
+        }
+        
+        // Update lives display with heart images
+        function updateLivesDisplay() {
+            const heartsDisplay = document.getElementById('heartsDisplay');
+            heartsDisplay.innerHTML = '';
+            
+            for (let i = 0; i < lives; i++) {
+                if (images.heart.complete && images.heart.naturalWidth > 0) {
+                    const heartImg = document.createElement('img');
+                    heartImg.src = 'assets/life.png';
+                    heartImg.className = 'heart';
+                    heartsDisplay.appendChild(heartImg);
+                } else {
+                    // Fallback to text hearts
+                    const heart = document.createElement('span');
+                    heart.textContent = '♥';
+                    heart.style.color = '#ff4444';
+                    heart.style.marginRight = '5px';
+                    heart.style.fontSize = '20px';
+                    heartsDisplay.appendChild(heart);
+                }
+            }
+        }
+        
+        // Collision detection
+        function checkCollisions() {
+            // Bullet-enemy collisions
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    if (bullets[i] && enemies[j] &&
+                        bullets[i].x < enemies[j].x + enemies[j].width &&
+                        bullets[i].x + bullets[i].width > enemies[j].x &&
+                        bullets[i].y < enemies[j].y + enemies[j].height &&
+                        bullets[i].y + bullets[i].height > enemies[j].y) {
+                        
+                        // Create explosion particles
+                        createExplosion(enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2);
+                        
+                        bullets.splice(i, 1);
+                        enemies.splice(j, 1);
+                        score += 10;
+                        updateUI();
+                        break;
+                    }
+                }
+            }
+            
+            // Player-enemy collisions
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                if (enemies[i].x < player.x + player.width &&
+                    enemies[i].x + enemies[i].width > player.x &&
+                    enemies[i].y < player.y + player.height &&
+                    enemies[i].y + enemies[i].height > player.y) {
+                    
+                    createExplosion(enemies[i].x + enemies[i].width / 2, enemies[i].y + enemies[i].height / 2);
+                    enemies.splice(i, 1);
+                    loseLife();
+                }
+            }
+        }
+        
+        // Create explosion effect
+        function createExplosion(x, y) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    life: 30,
+                    maxLife: 30,
+                    size: Math.random() * 4 + 2
+                });
+            }
+        }
+        
+        // Update particles
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+        
+        // Drawing functions
+        function drawBackground() {
+            if (images.background.complete && images.background.naturalWidth > 0) {
+                // Scrolling background
+                ctx.drawImage(images.background, 0, backgroundY, canvas.width, canvas.height);
+                ctx.drawImage(images.background, 0, backgroundY - canvas.height, canvas.width, canvas.height);
+                backgroundY += 1;
+                if (backgroundY >= canvas.height) {
+                    backgroundY = 0;
+                }
+            } else {
+                // Fallback gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#001122');
+                gradient.addColorStop(1, '#000033');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        
+        function drawPlayer() {
+            if (images.player.complete && images.player.naturalWidth > 0) {
+                ctx.drawImage(images.player, player.x, player.y, player.width, player.height);
+            } else {
+                // Fallback to colored rectangle
+                ctx.fillStyle = '#00ffff';
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+                ctx.shadowBlur = 0;
+            }
+        }
+        
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                if (images.bullet.complete && images.bullet.naturalWidth > 0) {
+                    ctx.drawImage(images.bullet, bullet.x, bullet.y, bullet.width, bullet.height);
+                } else {
+                    // Fallback to colored rectangle
+                    ctx.fillStyle = '#ffff00';
+                    ctx.shadowColor = '#ffff00';
+                    ctx.shadowBlur = 5;
+                    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                    ctx.shadowBlur = 0;
+                }
+            });
+        }
+        
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                if (images.enemy.complete && images.enemy.naturalWidth > 0) {
+                    ctx.drawImage(images.enemy, enemy.x, enemy.y, enemy.width, enemy.height);
+                } else {
+                    // Fallback to colored rectangle
+                    ctx.fillStyle = '#ff4444';
+                    ctx.shadowColor = '#ff4444';
+                    ctx.shadowBlur = 8;
+                    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    ctx.shadowBlur = 0;
+                }
+            });
+        }
+        
+        function drawParticles() {
+            particles.forEach(p => {
+                let alpha = p.life / p.maxLife;
+                ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+            });
+        }
+        
+        // UI updates
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            updateHighScoreDisplay();
+        }
+        
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            
+            // Check for high score
+            let newHighScore = false;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('spaceShooterHighScore', highScore);
+                newHighScore = true;
+            }
+            
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('newHighScore').style.display = newHighScore ? 'block' : 'none';
+            document.getElementById('gameOver').style.display = 'block';
+        }
+        
+        // Restart game
+        function restartGame() {
+            gameStarted = true;
+            gameRunning = true;
+            score = 0;
+            lives = 5;
+            bullets = [];
+            enemies = [];
+            particles = [];
+            enemySpawnTimer = 0;
+            enemySpawnRate = 60;
+            player.x = canvas.width / 2 - 30;
+            player.y = canvas.height - 80;
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            updateLivesDisplay();
+            updateUI();
+        }
+        
+        // Game loop
+        function gameLoop() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            drawBackground();
+            
+            if (gameRunning && gameStarted) {
+                // Update game objects
+                updatePlayer();
+                updateBullets();
+                updateEnemies();
+                updateParticles();
+                checkCollisions();
+                
+                // Spawn enemies
+                enemySpawnTimer++;
+                if (enemySpawnTimer > enemySpawnRate) {
+                    spawnEnemy();
+                    enemySpawnTimer = 0;
+                    // Gradually increase difficulty
+                    if (enemySpawnRate > 30) {
+                        enemySpawnRate -= 0.5;
+                    }
+                }
+                
+                // Draw everything
+                drawPlayer();
+                drawBullets();
+                drawEnemies();
+            }
+            
+            // Always draw particles (for explosions)
+            drawParticles();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Initialize game
+        createStars();
+        setupMobileControls();
+        updateHighScoreDisplay();
+        updateUI();
+        gameLoop();
+    </script>
+</body>
+</html>
