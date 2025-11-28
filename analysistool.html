@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>--Data Analysis Tool--</title>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#fff; --accent:#0b63d6; --danger:#ffdddd; --muted:#556;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Arial,sans-serif;margin:18px;background:var(--bg);color:#071132}
+  h1{margin:0 0 8px 0;font-size:20px}
+  .container{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:340px 1fr;gap:14px}
+  .card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 20px rgba(12,20,40,0.06)}
+  label.button{display:inline-block;background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+  input[type=file]{display:block;margin-top:8px}
+  select,input[type=number],input[type=text]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ef;margin-top:8px}
+  .controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  button{padding:8px 10px;border-radius:8px;border:none;background:#eef6ff;color:var(--accent);cursor:pointer;font-weight:700}
+  button.primary{background:var(--accent);color:#fff}
+  .muted{background:#f5f7fb;color:#333;padding:6px 8px;border-radius:8px}
+  .meta{font-size:13px;color:var(--muted);margin-top:8px}
+  .table-wrap{overflow:auto;max-height:520px;border-radius:12px;padding:10px}
+  table{border-collapse:collapse;width:100%}
+  th,td{padding:8px;border-bottom:1px solid #f1f5f9;font-size:13px;text-align:left}
+  th{position:sticky;top:0;background:#fff}
+  tr.anom{background:linear-gradient(90deg, rgba(255,200,200,0.16), rgba(255,255,255,0))}
+  tr:hover{background:#fbfdff}
+  .stat{background:#fbfdff;padding:8px;border-radius:8px;margin-bottom:8px;font-size:13px}
+  .chart-wrap{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .chart-card{flex:1;min-width:260px;padding:10px;border-radius:10px;background:var(--card);box-shadow:0 6px 18px rgba(12,20,40,0.04)}
+  canvas{width:100%;height:260px;display:block}
+  .pager{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .pill{background:#eef3ff;padding:6px 10px;border-radius:999px;color:var(--accent);font-weight:700}
+  @media(max-width:980px){.container{grid-template-columns:1fr} .chart-wrap{flex-direction:column}}
+</style>
+</head>
+<body>
+  <h1>Data Analysis Tool</h1>
+  <p class="meta">Upload a CSV, detect anomalies (IQR/Z/Std/MAD), detect date columns, analyze trends over time, compare periods, and visualize with line/bar/histogram charts. Export anomalies-only or cleaned CSV.</p>
+
+  <div class="container">
+    <!-- left controls -->
+    <aside class="card">
+      <div>
+
+        <label class="button" for="fileInput">📂 Choose CSV</label>
+        <input id="fileInput" type="file" accept=".csv,text/csv" />
+        <div id="fileInfo" class="meta">No file loaded.</div>
+
+        <hr style="margin:12px 0">
+
+        <label style="font-weight:700">Anomaly Method</label>
+        <select id="method">
+          <option value="iqr">IQR (Interquartile Range)</option>
+          <option value="zscore">Z-Score (|z| &gt; threshold)</option>
+          <option value="std">Std Deviation (mean ± k×σ)</option>
+          <option value="mean">Mean-Based Threshold (mean ± threshold)</option>
+          <option value="mad">MAD (Median Absolute Deviation)</option>
+        </select>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="zThreshold" type="number" step="0.1" value="3" title="Z threshold" />
+          <input id="stdK" type="number" step="0.1" value="3" title="k for std" />
+        </div>
+        <input id="meanThreshold" type="text" placeholder="Mean threshold (numeric, optional)" />
+        <div class="meta" style="margin-top:8px"><label><input id="ignoreNonNumeric" type="checkbox" checked /> Ignore non-numeric columns</label></div>
+
+        <div class="controls">
+          <button id="detectBtn" class="primary">Detect Anomalies</button>
+          <button id="downloadAnom">Download Anomalies</button>
+          <button id="downloadClean">Download Cleaned</button>
+        </div>
+
+        <hr style="margin:12px 0">
+
+        <label style="font-weight:700">Time Analysis</label>
+        <div class="meta">Select detected date column and numeric column for trends & period comparisons.</div>
+        <select id="dateColumn"></select>
+        <select id="valueColumn"></select>
+
+        <label style="font-weight:700; margin-top:8px">Aggregation</label>
+        <select id="aggPeriod">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly (Mon-Sun)</option>
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+
+        <div class="controls" style="margin-top:8px">
+          <button id="analyzeTime" class="muted">Analyze Time</button>
+          <button id="comparePeriod" class="muted">Compare Periods</button>
+        </div>
+
+        <hr style="margin:12px 0">
+
+        <label style="font-weight:700">Charts</label>
+        <div class="meta">Choose chart type and column to draw.</div>
+        <select id="chartType">
+          <option value="line">Line (time series)</option>
+          <option value="bar">Bar (period summary)</option>
+          <option value="hist">Histogram (distribution)</option>
+        </select>
+        <select id="chartColumn"></select>
+        <div class="controls" style="margin-top:8px">
+          <button id="drawChart" class="muted">Draw Chart</button>
+          <button id="clearChart" class="muted">Clear</button>
+        </div>
+
+        <hr style="margin:12px 0">
+        <div id="summaryPanel" style="display:none">
+          <div style="font-weight:700">Summary Statistics</div>
+          <div id="summaryStats"></div>
+          <div class="stat"><strong>Total rows:</strong> <span id="totalRows">0</span></div>
+          <div class="stat"><strong>Anomalous rows:</strong> <span id="anomCount">0</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- right: table + charts -->
+    <main>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="meta" id="loadedFile">No data loaded.</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="pill" id="pagePill">Page 0</div>
+            <div class="pager">
+              <button id="firstPage">First</button>
+              <button id="prevPage">Prev</button>
+              <div class="meta" id="pageLabel">0 / 0</div>
+              <button id="nextPage">Next</button>
+              <button id="lastPage">Last</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table id="dataTable"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <div class="meta">Page size: <input id="pageSize" type="number" value="100" min="10" max="1000" style="width:90px" /></div>
+          <div class="meta">Showing <span id="showingCount">0</span> rows</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="chart-card card">
+          <div style="font-weight:700">Chart</div>
+          <canvas id="chartCanvas" width="800" height="300"></canvas>
+        </div>
+
+        <div class="chart-card card" style="min-width:300px;">
+          <div style="font-weight:700">Time Analysis Output</div>
+          <div id="timeAnalysis" class="meta" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script>
+/*
+  Single-file CSV Analyzer w/ anomaly detection, date/time analysis, and canvas charts.
+  - No external libraries (works offline)
+  - Key areas:
+    * CSV parsing
+    * Type detection (numeric, date)
+    * Column stats (mean, std, q1, q3, iqr, mad)
+    * Anomaly detection (IQR/Z/Std/Mean/MAD)
+    * Time aggregation & period comparison
+    * Simple Canvas charting (line, bar, histogram)
+    * CSV export (anomalies-only, cleaned)
+    * Pagination for large datasets
+*/
+
+/* ---------------- Globals ---------------- */
+let headers = [];
+let rawData = [];         // array of objects keyed by headers
+let numericCols = [];     // header names that are numeric
+let dateCols = [];        // candidate date columns
+let colStats = {};        // stats per numeric column
+let isAnomaly = [];       // boolean flags per row
+let parsed = false;
+
+// Pagination
+let pageSize = 100;
+let currentPage = 1;
+
+/* ---------------- DOM refs ---------------- */
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const loadedFile = document.getElementById('loadedFile');
+const methodSelect = document.getElementById('method');
+const zThresholdInput = document.getElementById('zThreshold');
+const stdKInput = document.getElementById('stdK');
+const meanThresholdInput = document.getElementById('meanThreshold');
+const ignoreNonNumericCheckbox = document.getElementById('ignoreNonNumeric');
+const detectBtn = document.getElementById('detectBtn');
+const downloadAnomBtn = document.getElementById('downloadAnom');
+const downloadCleanBtn = document.getElementById('downloadClean');
+
+const dateColumnSelect = document.getElementById('dateColumn');
+const valueColumnSelect = document.getElementById('valueColumn');
+const aggPeriodSelect = document.getElementById('aggPeriod');
+const analyzeTimeBtn = document.getElementById('analyzeTime');
+const comparePeriodBtn = document.getElementById('comparePeriod');
+
+const chartTypeSelect = document.getElementById('chartType');
+const chartColumnSelect = document.getElementById('chartColumn');
+const drawChartBtn = document.getElementById('drawChart');
+const clearChartBtn = document.getElementById('clearChart');
+const chartCanvas = document.getElementById('chartCanvas');
+const chartCtx = chartCanvas.getContext('2d');
+
+const summaryPanel = document.getElementById('summaryPanel');
+const summaryStatsDiv = document.getElementById('summaryStats');
+const totalRowsEl = document.getElementById('totalRows');
+const anomCountEl = document.getElementById('anomCount');
+
+const tableHead = document.getElementById('tableHead');
+const tableBody = document.getElementById('tableBody');
+const pageSizeInput = document.getElementById('pageSize');
+const showingCount = document.getElementById('showingCount');
+const pageLabel = document.getElementById('pageLabel');
+const pagePill = document.getElementById('pagePill');
+const firstPageBtn = document.getElementById('firstPage');
+const prevPageBtn = document.getElementById('prevPage');
+const nextPageBtn = document.getElementById('nextPage');
+const lastPageBtn = document.getElementById('lastPage');
+
+const timeAnalysisDiv = document.getElementById('timeAnalysis');
+
+/* ---------------- Utility math ---------------- */
+function sum(arr){ return arr.reduce((a,b)=>a+b,0); }
+function mean(arr){ return arr.length? sum(arr)/arr.length : NaN; }
+function median(arr){
+  if(!arr.length) return NaN;
+  const s = arr.slice().sort((a,b)=>a-b);
+  const m = Math.floor((s.length-1)/2);
+  if(s.length%2) return s[m];
+  return (s[m]+s[m+1])/2;
+}
+function stddev(arr){
+  if(!arr.length) return NaN;
+  const m = mean(arr);
+  const v = arr.reduce((acc,x)=>acc + Math.pow(x-m,2),0) / arr.length;
+  return Math.sqrt(v);
+}
+function quantile(sortedArr,q){
+  if(!sortedArr.length) return NaN;
+  const pos = (sortedArr.length-1) * q;
+  const base = Math.floor(pos), rest = pos - base;
+  if(sortedArr[base+1] !== undefined) return sortedArr[base] + rest*(sortedArr[base+1]-sortedArr[base]);
+  return sortedArr[base];
+}
+
+/* ---------------- Robust CSV parser ----------------
+   - Handles quoted fields, embedded commas/newlines, escaped quotes ("")
+   - Returns array of rows (arrays)
+*/
+function parseCSVText(text){
+  const rows = [];
+  let cur = '';
+  let row = [];
+  let inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    const nxt = text[i+1];
+    if(inQuotes){
+      if(ch === '"' && nxt === '"'){ cur += '"'; i++; continue; }
+      if(ch === '"'){ inQuotes = false; continue; }
+      cur += ch;
+    } else {
+      if(ch === '"'){ inQuotes = true; continue; }
+      if(ch === ','){ row.push(cur); cur = ''; continue; }
+      if(ch === '\r'){ continue; }
+      if(ch === '\n'){ row.push(cur); rows.push(row); row = []; cur = ''; continue; }
+      cur += ch;
+    }
+  }
+  // finish last
+  row.push(cur);
+  // if last row is just empty and file ended with newline, drop only-empty final row
+  if(!(row.length===1 && row[0]==='')) rows.push(row);
+  return rows;
+}
+
+/* ---------------- File load ---------------- */
+fileInput.addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  fileInfo.textContent = `Reading ${f.name}...`;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try{
+      const txt = ev.target.result;
+      const rows = parseCSVText(txt);
+      if(rows.length === 0){ alert('CSV is empty'); return; }
+      headers = rows.shift().map(h => String(h).trim());
+      rawData = rows.map(r => {
+        const obj = {};
+        for(let i=0;i<headers.length;i++){
+          obj[headers[i]] = (i < r.length) ? r[i] : '';
+        }
+        return obj;
+      });
+      parsed = true;
+      isAnomaly = new Array(rawData.length).fill(false);
+      fileInfo.textContent = `Loaded ${f.name} — ${rawData.length} rows, ${headers.length} columns`;
+      loadedFile.textContent = f.name;
+      detectColumnTypes();
+      computeColStats();
+      populateColumnSelectors();
+      currentPage = 1;
+      renderTable();
+      updateSummary();
+    } catch(err){
+      alert('Failed to parse CSV: ' + err.message);
+      console.error(err);
+    }
+  };
+  reader.onerror = ()=> alert('Failed to read file');
+  reader.readAsText(f);
+});
+
+/* ---------------- Type detection for columns ---------------- */
+/* Decide numeric and date-like columns.
+   Numeric: sample values, if >=40% parse as number -> numeric
+   Date: attempt parse via multiple heuristics and Date.parse; also unix timestamp detection
+*/
+function isLikelyDateString(s){
+  if(!s) return false;
+  const str = String(s).trim();
+  // common ISO date or datetime
+  if(/^\d{4}-\d{2}-\d{2}/.test(str)) return true;        // 2020-05-01
+  if(/^\d{4}\/\d{2}\/\d{2}/.test(str)) return true;
+  if(/^\d{2}\/\d{2}\/\d{4}/.test(str)) return true;      // 01/05/2020
+  if(/^\d{2}-\d{2}-\d{4}/.test(str)) return true;
+  if(/^\d{4}-\d{2}-\d{2}T/.test(str)) return true;       // ISO
+  // datetime with space
+  if(/^\d{4}\s\d{2}:\d{2}:\d{2}/.test(str)) return true;
+  // unix timestamp numeric-looking with length 10 or 13
+  if(/^\d{10}$/.test(str) || /^\d{13}$/.test(str)) return true;
+  // fallback: Date.parse
+  const pd = Date.parse(str);
+  return !isNaN(pd);
+}
+
+function detectColumnTypes(){
+  numericCols = [];
+  dateCols = [];
+  for(const h of headers){
+    let numericCount=0, dateCount=0, checked=0;
+    for(let i=0;i<rawData.length && checked<300;i++,checked++){
+      const v = rawData[i][h];
+      if(v===null||v===undefined||v==='') continue;
+      const n = Number(String(v).trim().replace(/,/g,'')); // allow thousand separators
+      if(isFinite(n)) numericCount++;
+      if(isLikelyDateString(v)) dateCount++;
+    }
+    if(checked>0 && numericCount/checked >= 0.4) numericCols.push(h);
+    if(checked>0 && dateCount/checked >= 0.3) dateCols.push(h); // looser threshold
+  }
+}
+
+/* ---------------- Compute column statistics ---------------- */
+function computeColStats(){
+  colStats = {};
+  for(const col of numericCols){
+    const vals = [];
+    for(const row of rawData){
+      const v = row[col];
+      const n = Number(String(v).trim().replace(/,/g,''));
+      if(isFinite(n)) vals.push(n);
+    }
+    const sorted = vals.slice().sort((a,b)=>a-b);
+    const s = {
+      count: vals.length,
+      values: vals,
+      sorted,
+      mean: mean(vals),
+      median: median(vals),
+      std: stddev(vals),
+      q1: quantile(sorted,0.25),
+      q3: quantile(sorted,0.75),
+      iqr: quantile(sorted,0.75) - quantile(sorted,0.25),
+      mad: (function(){
+        if(!vals.length) return NaN;
+        const med = median(vals);
+        const devs = vals.map(x=>Math.abs(x-med));
+        return median(devs);
+      })()
+    };
+    colStats[col] = s;
+  }
+}
+
+/* ---------------- Anomaly detection for a single value ---------------- */
+function valueIsAnomalous(col, rawVal, method, params){
+  if(rawVal === null || rawVal === undefined || rawVal === '') return false;
+  const s = colStats[col];
+  if(!s) return false;
+  const n = Number(String(rawVal).trim().replace(/,/g,''));
+  if(!isFinite(n)) return false;
+  switch(method){
+    case 'iqr': {
+      const lower = s.q1 - 1.5 * s.iqr;
+      const upper = s.q3 + 1.5 * s.iqr;
+      return (n < lower || n > upper);
+    }
+    case 'zscore': {
+      if(isNaN(s.std) || s.std === 0) return false;
+      const z = (n - s.mean) / s.std;
+      return Math.abs(z) > (params.zThreshold || 3);
+    }
+    case 'std': {
+      const k = params.k || 3;
+      const lower = s.mean - k*s.std;
+      const upper = s.mean + k*s.std;
+      return (n < lower || n > upper);
+    }
+    case 'mean': {
+      const t = params.threshold;
+      if(t === null || t === undefined || t === '') return false;
+      if(isNaN(Number(t))) return false;
+      return (n < (s.mean - Number(t)) || n > (s.mean + Number(t)));
+    }
+    case 'mad': {
+      const mad = s.mad;
+      if(isNaN(mad) || mad === 0) return false;
+      const modZ = 0.6745 * (n - s.median) / mad;
+      return Math.abs(modZ) > (params.madThreshold || 3.5);
+    }
+    default:
+      return false;
+  }
+}
+
+/* ---------------- Run anomaly detection across dataset ---------------- */
+function runAnomalyDetection(){
+  if(!parsed){ alert('Load CSV first'); return; }
+  const method = methodSelect.value;
+  const params = {
+    zThreshold: Number(zThresholdInput.value) || 3,
+    k: Number(stdKInput.value) || 3,
+    threshold: meanThresholdInput.value === '' ? null : Number(meanThresholdInput.value),
+    madThreshold: 3.5
+  };
+  const ignoreNonNumeric = ignoreNonNumericCheckbox.checked;
+  isAnomaly = new Array(rawData.length).fill(false);
+  let count = 0;
+  for(let i=0;i<rawData.length;i++){
+    const row = rawData[i];
+    let rowAnom = false;
+    for(const col of numericCols){
+      if(ignoreNonNumeric && (!colStats[col] || colStats[col].count === 0)) continue;
+      if(valueIsAnomalous(col, row[col], method, params)){
+        rowAnom = true;
+        break;
+      }
+    }
+    isAnomaly[i] = rowAnom;
+    if(rowAnom) count++;
+  }
+  anomCountEl.textContent = count;
+  updateSummary();
+  renderTable();
+}
+
+/* ---------------- Render table with pagination ---------------- */
+function renderTable(){
+  // headers
+  tableHead.innerHTML = '';
+  const tr = document.createElement('tr');
+  for(const h of headers){
+    const th = document.createElement('th');
+    th.textContent = h;
+    tr.appendChild(th);
+  }
+  tableHead.appendChild(tr);
+
+  // paging
+  pageSize = Math.min(1000, Math.max(10, Number(pageSizeInput.value) || 100));
+  const totalPages = Math.max(1, Math.ceil(rawData.length / pageSize));
+  currentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const start = (currentPage -1) * pageSize;
+  const end = Math.min(rawData.length, start + pageSize);
+  tableBody.innerHTML = '';
+  for(let i=start;i<end;i++){
+    const row = rawData[i];
+    const tr = document.createElement('tr');
+    if(isAnomaly[i]) tr.classList.add('anom');
+    for(const h of headers){
+      const td = document.createElement('td');
+      td.textContent = (row[h] === null || row[h] === undefined) ? '' : String(row[h]);
+      tr.appendChild(td);
+    }
+    tableBody.appendChild(tr);
+  }
+  pageLabel.textContent = `${currentPage} / ${totalPages}`;
+  pagePill.textContent = `Page ${currentPage}`;
+  showingCount.textContent = `${start+1} - ${end} of ${rawData.length}`;
+  totalRowsEl.textContent = rawData.length;
+}
+
+/* ---------------- Populate column selectors (date / value / chart) ---------------- */
+function populateColumnSelectors(){
+  // Clear
+  dateColumnSelect.innerHTML = '<option value="">-- select date column --</option>';
+  valueColumnSelect.innerHTML = '<option value="">-- select numeric column --</option>';
+  chartColumnSelect.innerHTML = '<option value="">-- select column --</option>';
+  // date candidates
+  for(const c of dateCols){
+    const o = document.createElement('option'); o.value = c; o.textContent = c; dateColumnSelect.appendChild(o);
+  }
+  // numeric candidates
+  for(const c of numericCols){
+    const o = document.createElement('option'); o.value = c; o.textContent = c; valueColumnSelect.appendChild(o);
+  }
+  // chart column: include numeric and date columns
+  for(const c of headers){
+    const o = document.createElement('option'); o.value = c; o.textContent = c; chartColumnSelect.appendChild(o);
+  }
+}
+
+/* ---------------- Summary panel ---------------- */
+function updateSummary(){
+  if(!parsed){ summaryPanel.style.display = 'none'; return; }
+  summaryPanel.style.display = 'block';
+  summaryStatsDiv.innerHTML = '';
+  for(const col of numericCols){
+    const s = colStats[col];
+    const div = document.createElement('div');
+    div.className = 'stat';
+    div.innerHTML = `<strong>${col}</strong><div style="font-size:12px;color:#556">
+      mean:${isNaN(s.mean)?'NaN':s.mean.toFixed(3)} std:${isNaN(s.std)?'NaN':s.std.toFixed(3)} q1:${isNaN(s.q1)?'NaN':s.q1.toFixed(3)} q3:${isNaN(s.q3)?'NaN':s.q3.toFixed(3)} iqr:${isNaN(s.iqr)?'NaN':s.iqr.toFixed(3)}
+    </div>`;
+    summaryStatsDiv.appendChild(div);
+  }
+  totalRowsEl.textContent = rawData.length;
+  const aCount = isAnomaly.filter(Boolean).length;
+  anomCountEl.textContent = aCount;
+}
+
+/* ---------------- CSV export helpers ---------------- */
+function escapeCell(s){
+  if(s === null || s === undefined) return '';
+  const str = String(s);
+  if(str.includes('"') || str.includes(',') || str.includes('\n')){
+    return '"' + str.replace(/"/g,'""') + '"';
+  }
+  return str;
+}
+function rowsToCSV(rows){
+  const lines = [];
+  lines.push(headers.map(escapeCell).join(','));
+  for(const r of rows){
+    const line = headers.map(h => escapeCell(r[h] === undefined ? '' : r[h]));
+    lines.push(line.join(','));
+  }
+  return lines.join('\n');
+}
+function downloadCSV(text, filename){
+  const blob = new Blob([text], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------------- Exports ---------------- */
+downloadAnomBtn.addEventListener('click', ()=>{
+  if(!parsed) { alert('Load CSV first'); return; }
+  const anoms = [];
+  for(let i=0;i<rawData.length;i++) if(isAnomaly[i]) anoms.push(rawData[i]);
+  if(anoms.length === 0){ alert('No anomalous rows detected'); return; }
+  const csv = rowsToCSV(anoms);
+  downloadCSV(csv, 'anomalies_only.csv');
+});
+downloadCleanBtn.addEventListener('click', ()=>{
+  if(!parsed) { alert('Load CSV first'); return; }
+  const clean = [];
+  for(let i=0;i<rawData.length;i++) if(!isAnomaly[i]) clean.push(rawData[i]);
+  const csv = rowsToCSV(clean);
+  downloadCSV(csv, 'cleaned_data.csv');
+});
+
+/* ---------------- Pagination controls ---------------- */
+firstPageBtn.addEventListener('click', ()=>{ currentPage=1; renderTable(); });
+prevPageBtn.addEventListener('click', ()=>{ if(currentPage>1) currentPage--; renderTable(); });
+nextPageBtn.addEventListener('click', ()=>{ const tp = Math.ceil(rawData.length / pageSize); if(currentPage<tp) currentPage++; renderTable(); });
+lastPageBtn.addEventListener('click', ()=>{ currentPage = Math.ceil(rawData.length / pageSize); renderTable(); });
+pageSizeInput.addEventListener('change', ()=>{ currentPage=1; renderTable(); });
+
+/* ---------------- Date parsing helpers ----------------
+   parseDateFlexible: supports many common formats & unix timestamps
+*/
+function parseDateFlexible(v){
+  if(v === null || v === undefined) return null;
+  const s = String(v).trim();
+  if(s==='') return null;
+  // unix (seconds) 10 digits
+  if(/^\d{10}$/.test(s)){
+    const t = parseInt(s,10) * 1000; return new Date(t);
+  }
+  // unix (ms) 13 digits
+  if(/^\d{13}$/.test(s)){
+    const t = parseInt(s,10); return new Date(t);
+  }
+  // Replace common separators
+  // Try Date.parse first for ISO-like strings
+  const iso = Date.parse(s);
+  if(!isNaN(iso)) return new Date(iso);
+  // Try dd/mm/yyyy or mm/dd/yyyy heuristics:
+  // If matches dd/mm/yyyy or d/m/yyyy
+  const dm = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/;
+  const m = s.match(dm);
+  if(m){
+    const p1 = parseInt(m[1],10), p2 = parseInt(m[2],10), y = parseInt(m[3],10);
+    // Heuristic: if p1>12 then p1=day
+    let day = p1, month = p2;
+    if(p1 > 12){ day = p1; month = p2; }
+    // ambiguous: assume day/month/year
+    return new Date(y, month-1, day, +(m[4]||0), +(m[5]||0), +(m[6]||0));
+  }
+  // fallback Date.parse again
+  const fallback = Date.parse(s.replace(/-/g,'/'));
+  if(!isNaN(fallback)) return new Date(fallback);
+  return null;
+}
+
+/* ---------------- Time aggregation ----------------
+   Aggregate by daily / weekly / monthly / yearly.
+   Returns map: { periodKey: {count, sum, avg, min, max} }
+*/
+function getPeriodKey(dateObj, period){
+  const d = new Date(dateObj);
+  if(period === 'daily') return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  if(period === 'monthly') return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  if(period === 'yearly') return String(d.getFullYear());
+  if(period === 'weekly'){
+    // ISO week starting Monday: compute week number via simple method (year-week)
+    const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = tmp.getUTCDay() || 7;
+    tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(),0,1));
+    const weekNo = Math.ceil((((tmp - yearStart) / 86400000) + 1)/7);
+    return tmp.getUTCFullYear() + '-W' + String(weekNo).padStart(2,'0');
+  }
+  return d.toISOString();
+}
+
+function aggregateTimeSeries(dateCol, valueCol, period){
+  const map = new Map();
+  for(let i=0;i<rawData.length;i++){
+    const row = rawData[i];
+    const d = parseDateFlexible(row[dateCol]);
+    if(!d) continue;
+    const key = getPeriodKey(d, period);
+    const v = Number(String(row[valueCol]).trim().replace(/,/g,''));
+    if(!isFinite(v)) continue;
+    if(!map.has(key)) map.set(key, {count:0, sum:0, min: v, max: v});
+    const o = map.get(key);
+    o.count += 1;
+    o.sum += v;
+    if(v < o.min) o.min = v;
+    if(v > o.max) o.max = v;
+    map.set(key,o);
+  }
+  // create sorted array by chronological order of key -> convert key back to date for sorting
+  const arr = Array.from(map.entries()).map(([k,v])=>{
+    // attempt to reconstruct a date for sorting
+    let sortDate = new Date(k);
+    if(k.includes('-W')){ // weekly key YYYY-Www -> approximate start of week
+      const parts = k.split('-W'); const y = +parts[0]; const w = +parts[1];
+      // approximate: week w => set date to Jan 1 + (w-1)*7 days
+      sortDate = new Date(Date.UTC(y,0,1) + (w-1)*7*24*3600*1000);
+    } else if(/^\d{4}-\d{2}-\d{2}$/.test(k)){
+      sortDate = new Date(k + 'T00:00:00');
+    } else if(/^\d{4}-\d{2}$/.test(k)){
+      sortDate = new Date(k + '-01T00:00:00');
+    } else if(/^\d{4}$/.test(k)){
+      sortDate = new Date(k + '-01-01T00:00:00');
+    } else {
+      const pd = Date.parse(k);
+      sortDate = isNaN(pd) ? new Date(k) : new Date(pd);
+    }
+    return { periodKey: k, stats: v, date: sortDate, avg: v.count ? v.sum / v.count : 0 };
+  }).sort((a,b)=>a.date - b.date);
+  return arr;
+}
+
+/* ---------------- Period comparison ----------------
+   For the selected aggregation, compare the latest period vs previous period:
+   returns an object with metrics and percent change
+*/
+function compareLatestTwoPeriods(dateCol, valueCol, period){
+  const arr = aggregateTimeSeries(dateCol, valueCol, period);
+  if(arr.length < 2) return null;
+  const last = arr[arr.length-1];
+  const prev = arr[arr.length-2];
+  const res = {
+    lastPeriod: last.periodKey, prevPeriod: prev.periodKey,
+    lastCount: last.stats.count, prevCount: prev.stats.count,
+    lastAvg: last.avg, prevAvg: prev.avg,
+    countChangePct: prev.count ? ((last.stats.count - prev.stats.count)/prev.stats.count)*100 : null,
+    avgChangePct: prev.avg ? ((last.avg - prev.avg)/prev.avg)*100 : null
+  };
+  return res;
+}
+
+/* ---------------- Chart helpers (Canvas 2D) ----------------
+   Very simple charting functions: line chart, bar chart, histogram.
+   They draw axes, labels, and scaled data. Not a full-featured lib but sufficient for exploratory visuals.
+*/
+function clearCanvas(){
+  chartCtx.clearRect(0,0,chartCanvas.width, chartCanvas.height);
+  // background
+  chartCtx.fillStyle = '#ffffff';
+  chartCtx.fillRect(0,0,chartCanvas.width, chartCanvas.height);
+}
+
+function drawAxes(margin, w, h, xMaxLabel, yMaxLabel){
+  chartCtx.strokeStyle = '#d6d8df';
+  chartCtx.lineWidth = 1;
+  chartCtx.beginPath();
+  chartCtx.moveTo(margin, margin);
+  chartCtx.lineTo(margin, margin+h);
+  chartCtx.lineTo(margin+w, margin+h);
+  chartCtx.stroke();
+  // labels: none heavy—will be drawn by caller
+}
+
+function drawLineChart(labels, values){
+  clearCanvas();
+  const W = chartCanvas.width, H = chartCanvas.height;
+  const margin = 50;
+  const w = W - margin*1.5, h = H - margin*1.5;
+  const maxV = Math.max(...values, 0);
+  const minV = Math.min(...values, 0);
+  const span = maxV - minV || 1;
+  drawAxes(margin, w, h);
+  // draw line
+  chartCtx.beginPath();
+  for(let i=0;i<values.length;i++){
+    const x = margin + (i/(values.length-1 || 1)) * w;
+    const y = margin + h - ((values[i] - minV) / span) * h;
+    if(i===0) chartCtx.moveTo(x,y); else chartCtx.lineTo(x,y);
+  }
+  chartCtx.strokeStyle = '#0b63d6';
+  chartCtx.lineWidth = 2;
+  chartCtx.stroke();
+  // draw points
+  chartCtx.fillStyle = '#0b63d6';
+  for(let i=0;i<values.length;i++){
+    const x = margin + (i/(values.length-1 || 1)) * w;
+    const y = margin + h - ((values[i] - minV) / span) * h;
+    chartCtx.beginPath(); chartCtx.arc(x,y,3,0,Math.PI*2); chartCtx.fill();
+  }
+  // x labels (sparse)
+  chartCtx.fillStyle = '#333';
+  chartCtx.font = '12px sans-serif';
+  const step = Math.max(1, Math.floor(labels.length / 6));
+  for(let i=0;i<labels.length;i+=step){
+    const x = margin + (i/(labels.length-1 || 1)) * w;
+    chartCtx.fillText(labels[i], x-20, margin + h + 18);
+  }
+  // y labels
+  chartCtx.fillText(maxV.toFixed(2), 8, margin+6);
+  chartCtx.fillText(minV.toFixed(2), 8, margin+h+4);
+}
+
+function drawBarChart(labels, values){
+  clearCanvas();
+  const W = chartCanvas.width, H = chartCanvas.height;
+  const margin = 50;
+  const w = W - margin*1.5, h = H - margin*1.5;
+  const maxV = Math.max(...values, 0);
+  const span = maxV || 1;
+  drawAxes(margin, w, h);
+  const barW = w / values.length * 0.7;
+  for(let i=0;i<values.length;i++){
+    const x = margin + (i/(values.length)) * w + (w/values.length - barW)/2;
+    const y = margin + h - (values[i]/span) * h;
+    chartCtx.fillStyle = '#0b63d6';
+    chartCtx.fillRect(x, y, barW, (margin+h) - y);
+  }
+  // x labels (sparse)
+  chartCtx.fillStyle = '#333';
+  chartCtx.font = '12px sans-serif';
+  const step = Math.max(1, Math.floor(labels.length / 8));
+  for(let i=0;i<labels.length;i+=step){
+    const x = margin + (i/(labels.length)) * w;
+    chartCtx.fillText(labels[i], x, margin+h+18);
+  }
+  // y label
+  chartCtx.fillText(maxV.toFixed(2), 8, margin+6);
+}
+
+function drawHistogram(values, buckets=20){
+  clearCanvas();
+  const W = chartCanvas.width, H = chartCanvas.height;
+  const margin = 50;
+  const w = W - margin*1.5, h = H - margin*1.5;
+  const minV = Math.min(...values), maxV = Math.max(...values);
+  const span = maxV - minV || 1;
+  const counts = new Array(buckets).fill(0);
+  for(const v of values){
+    const idx = Math.min(buckets-1, Math.floor((v - minV)/span * buckets));
+    counts[idx] += 1;
+  }
+  const maxCount = Math.max(...counts);
+  drawAxes(margin, w, h);
+  const barW = w / buckets * 0.8;
+  for(let i=0;i<buckets;i++){
+    const x = margin + (i/buckets)*w + (w/buckets - barW)/2;
+    const barH = (counts[i] / (maxCount || 1)) * h;
+    const y = margin + h - barH;
+    chartCtx.fillStyle = '#0b63d6';
+    chartCtx.fillRect(x, y, barW, barH);
+  }
+  // x labels min/max
+  chartCtx.fillStyle = '#333';
+  chartCtx.font = '12px sans-serif';
+  chartCtx.fillText(minV.toFixed(2), margin, margin+h+18);
+  chartCtx.fillText(maxV.toFixed(2), margin + w - 30, margin+h+18);
+}
+
+/* ---------------- Chart drawing orchestration ---------------- */
+function drawSelectedChart(){
+  const chartType = chartTypeSelect.value;
+  const col = chartColumnSelect.value;
+  if(!col){ alert('Choose a column to chart'); return; }
+  clearCanvas();
+  if(chartType === 'hist'){
+    // histogram of numeric values
+    if(!numericCols.includes(col)){ alert('Histogram needs numeric column'); return; }
+    const vals = rawData.map(r => Number(String(r[col]).trim().replace(/,/g,''))).filter(isFinite);
+    if(vals.length === 0) { alert('No numeric values to plot'); return; }
+    drawHistogram(vals, 30);
+  } else if(chartType === 'line' || chartType === 'bar'){
+    // time chart requires date column selected
+    const dateCol = dateColumnSelect.value;
+    const valueCol = (chartType === 'line' && numericCols.includes(col)) ? col : valueColumnSelect.value;
+    if(!dateCol){ alert('Select date column for time-based charts'); return; }
+    if(!valueCol){ alert('Select numeric value column'); return; }
+    const period = aggPeriodSelect.value;
+    const arr = aggregateTimeSeries(dateCol, valueCol, period);
+    if(arr.length === 0){ alert('No time-series data available'); return; }
+    const labels = arr.map(a => a.periodKey);
+    const values = arr.map(a => a.avg); // use average per period
+    if(chartType === 'line') drawLineChart(labels, values);
+    else drawBarChart(labels, values);
+  }
+}
+
+/* ---------------- Time analysis handlers ---------------- */
+analyzeTimeBtn.addEventListener('click', ()=>{
+  const dateCol = dateColumnSelect.value;
+  const valueCol = valueColumnSelect.value;
+  const period = aggPeriodSelect.value;
+  if(!dateCol || !valueCol){ alert('Select date and numeric column'); return; }
+  const arr = aggregateTimeSeries(dateCol, valueCol, period);
+  if(arr.length === 0){ timeAnalysisDiv.textContent = 'No aggregated data.'; return; }
+  // Basic output: earliest, latest, counts, recent averages
+  const earliest = arr[0].periodKey, latest = arr[arr.length-1].periodKey;
+  const totalPeriods = arr.length;
+  const totalCount = arr.reduce((a,b)=>a + b.stats.count, 0);
+  const overallAvg = arr.reduce((a,b)=>a + b.stats.sum,0) / (totalCount || 1);
+  let out = '';
+  out += `Period: ${period}\nEarliest: ${earliest}\nLatest: ${latest}\nPeriods: ${totalPeriods}\nTotal observations: ${totalCount}\nOverall average: ${overallAvg.toFixed(3)}\n\n`;
+  // list recent periods
+  out += 'Recent periods:\n';
+  const recent = arr.slice(Math.max(0, arr.length-10));
+  for(const a of recent) out += `${a.periodKey} — count:${a.stats.count} avg:${a.avg.toFixed(3)}\n`;
+  timeAnalysisDiv.textContent = out;
+});
+
+comparePeriodBtn.addEventListener('click', ()=>{
+  const dateCol = dateColumnSelect.value;
+  const valueCol = valueColumnSelect.value;
+  const period = aggPeriodSelect.value;
+  if(!dateCol || !valueCol){ alert('Select date and numeric column'); return; }
+  const cmp = compareLatestTwoPeriods(dateCol, valueCol, period);
+  if(!cmp){ timeAnalysisDiv.textContent = 'Not enough periods to compare.'; return; }
+  let out = `Comparing latest two ${period} periods:\n`;
+  out += `Previous: ${cmp.prevPeriod} — count:${cmp.prevCount} avg:${cmp.prevAvg.toFixed(3)}\n`;
+  out += `Latest:   ${cmp.lastPeriod} — count:${cmp.lastCount} avg:${cmp.lastAvg.toFixed(3)}\n`;
+  if(cmp.countChangePct !== null) out += `Count change: ${cmp.countChangePct.toFixed(2)}%\n`;
+  if(cmp.avgChangePct !== null) out += `Avg change: ${cmp.avgChangePct.toFixed(2)}%\n`;
+  timeAnalysisDiv.textContent = out;
+});
+
+/* ---------------- Utility: detect date & numeric columns if none chosen ---------------- */
+function autoSelectDefaults(){
+  if(!dateColumnSelect.value && dateCols.length) dateColumnSelect.value = dateCols[0];
+  if(!valueColumnSelect.value && numericCols.length) valueColumnSelect.value = numericCols[0];
+  if(!chartColumnSelect.value && headers.length) chartColumnSelect.value = headers[0];
+}
+
+/* ---------------- Buttons & events ---------------- */
+detectBtn.addEventListener('click', runAnomalyDetection);
+drawChartBtn.addEventListener('click', drawSelectedChart);
+clearChartBtn.addEventListener('click', clearCanvas);
+
+/* ---------------- Initial setup helpers ---------------- */
+function populateColumnSelectors(){
+  dateColumnSelect.innerHTML = '<option value="">-- select date column --</option>';
+  valueColumnSelect.innerHTML = '<option value="">-- select numeric column --</option>';
+  chartColumnSelect.innerHTML = '<option value="">-- select column --</option>';
+  for(const c of dateCols){
+    const o = document.createElement('option'); o.value = c; o.textContent = c; dateColumnSelect.appendChild(o);
+  }
+  for(const c of numericCols){
+    const o = document.createElement('option'); o.value = c; o.textContent = c; valueColumnSelect.appendChild(o);
+  }
+  for(const c of headers){
+    const o = document.createElement('option'); o.value = c; o.textContent = c; chartColumnSelect.appendChild(o);
+  }
+  autoSelectDefaults();
+}
+
+/* ---------------- After load actions ---------------- */
+function afterLoadRefresh(){
+  if(!parsed) return;
+  detectColumnTypes();
+  computeColStats();
+  populateColumnSelectors();
+  updateSummary();
+  renderTable();
+}
+
+/* ---------------- Wire-up: call after file parsed ---------------- */
+(function attachAfterLoadHandler(){
+  // After a file is loaded and parsed, detect columns & stats:
+  const origReaderOnload = null;
+  // We use the fileInput change handler which calls detectColumnTypes etc.
+})();
+
+/* ---------------- Final notes ---------------- */
+// The UI will call parse, detect, analyze, and draw functions on user actions.
+// This is intentionally lightweight and synchronous; for extremely large files (>100k rows), consider chunking or server-side processing.
+
+</script>
+</body>
+</html>
